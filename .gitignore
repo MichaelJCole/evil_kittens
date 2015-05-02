@@ -1,0 +1,24 @@
+# ================
+# Dependency Packages
+# ================
+node_modules/
+npm-debug.log
+bower_components/
+.bower-*/
+
+
+# ================
+# Sublime Editor file
+# ================
+project.sublime-workspace
+
+
+# ================
+# Application files
+# ================
+logs/
+build/
+*.db
+memory
+sessions/
+*.log
