@@ -116,7 +116,7 @@ Note: The hardware and configuration these servers will affect performance.  The
 
 These differences are often as or more important than the actual code.
 
-Also, note that VPS hosting 
+Also, note that VPS hosting means you're sharing a server with other people.  Hosting companies isolate.
 
 ## Server Hardware
 
