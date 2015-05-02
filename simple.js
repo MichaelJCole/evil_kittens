@@ -1,6 +1,6 @@
 'use strict';
 
-var port = process.env.NODE_ENV || 8000;
+var port = process.env.PORT || 8000;
 var app = require('./app')({ port: port});
 app.listen(port);
 
