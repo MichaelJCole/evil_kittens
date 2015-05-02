@@ -105,10 +105,14 @@ If you'd like to deploy to heroku,
     heroku addons:add blazemeter:test
     heroku addons:add loaderio:basic
     heroku addons:add blitz:250
+    # Logging
+    heroku addons:add papertrail:choklad
     # Deploy
     git push heroku master
-    # Open in browser
+    # Open app in browser
     heroku open
+    # Open log in browser
+    heroku addons:open papertrail
 
 It was created to be fun, innocent, and destructive.
 

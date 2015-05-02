@@ -7,6 +7,7 @@ module.exports = function(config) {
   var express = require('express');
   var app = express();
 
+  app.use(require('morgan')('dev')); // log requests to console.
 
   // Get some data to serve
 
@@ -62,11 +63,11 @@ module.exports = function(config) {
   });
 
   app.get('/evil-kittens-sploding-your-cpu/:id', function(req, res, next) {
-    var start = new Date().getTime();
-    while(start > (new Date().getTime() - 1000)) {
-      req.result += Math.random() * Math.random();
+    function fib(n) {
+      if (n <= 1) return n;
+      else return fib(n-1) + fib(n-2);
     }
-    return res.send(req.kittens.id + ' splodin your cpu for 1 seconds');
+    return res.send(req.kittens.id + ' splodin your cpu for fib(39)' + fib(39));
   });
 
   app.get('/evil-kittens-sploding-your-disk/:id', function(req, res, next) {
