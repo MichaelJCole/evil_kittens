@@ -22,3 +22,4 @@ build/
 memory
 sessions/
 *.log
+*.tmp

@@ -79,7 +79,7 @@ module.exports = function(config) {
   });
 
   app.get('/evil-kittens-sploding-your-network/:id', function(req, res, next) {
-    return res.send(req.kittens.id + ' splodin your network with 1 meg to your browser: ' + crypto.randomBytes(1024*1024));
+    return res.send(req.kittens.id + ' splodin your network with 512k to your browser: ' + crypto.randomBytes(1024*1024));
   });
 
   // Show home page with list of routes.
