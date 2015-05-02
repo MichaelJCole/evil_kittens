@@ -83,12 +83,11 @@ module.exports = function(config) {
 
   // Show home page with list of routes.
   app.get('/', function(req, res, next) {
-    var routes = [];
+    var list = [];
     app._router.stack.forEach(function(r){
-      if (r.route && r.route.path) 
-      routes.push('http://127.0.0.1:' + config.port + r.route.path);
+      if (r.route && r.route.path) list.push(r.route.path);
     });
-    return res.render('index.jade', {routes: routes});
+    return res.render('index.jade', {routes: list});
   });
 
   app.use(function(err, req, res, next) {
