@@ -1,4 +1,4 @@
-# One crazy trick to Clustering and Load Test Node.js 0.12
+# Load Testing Web Apps 2015
 
 The secret to take a business to "web scale" is to hire quality engineers.
 

@@ -20,20 +20,20 @@ module.exports = function(config) {
   });
 
 
-  // Database of id's we're counting for
+  // Save database of Id's and leak memory 1meg/id
 
   var counts = {};
   app.param('id', function(req, res, next, id) {
     counts[id] = counts[id] || {
-      count: 0,
-      memoryLeak: crypto.randomBytes(1024*1024);
+      count: Math.floor(Math.random() * kittenNames.length),
+      memoryLeak: crypto.randomBytes(1024*1024),  // Oops.
     };
     // This gets put on every request with :id in the route
     req.kittens = {
       id: id,
       count: counts[id].count,
-      kittenName: kittenNames[ counts[id] % kittenNames.length ],
-      kittenJpg: kittenJpgs[ counts[id] % kittenJpgs.length ],
+      kittenName: kittenNames[ counts[id].count % kittenNames.length ],
+      kittenJpg: kittenJpgs[ counts[id].count % kittenJpgs.length ],
     };
     counts[id].count += 1;
     next();  // Contiue processing more routes
@@ -70,7 +70,7 @@ module.exports = function(config) {
   });
 
   app.get('/evil-kittens-sploding-your-disk/:id', function(req, res, next) {
-    var filename = __dirname + '/kitten.' + new Date().getTime() + '.tmp'
+    var filename = __dirname + '/kitten.' + new Date().getTime() + '.tmp';
     var stream = fs.createWriteStream(filename);
     stream.end(crypto.randomBytes(512*1024), function() {
       return res.send(req.kittens.id + ' splodin your disk with 1 meg to: ' + filename);
@@ -81,6 +81,15 @@ module.exports = function(config) {
     return res.send(req.kittens.id + ' splodin your network with 1 meg to your browser: ' + crypto.randomBytes(1024*1024));
   });
 
+  // Show home page with list of routes.
+  app.get('/', function(req, res, next) {
+    var routes = [];
+    app._router.stack.forEach(function(r){
+      if (r.route && r.route.path) 
+      routes.push('http://127.0.0.1:' + config.port + r.route.path);
+    });
+    return res.render('index.jade', {routes: routes});
+  });
 
   app.use(function(err, req, res, next) {
     console.log('*** Server Error:  ' + req.originalUrl);

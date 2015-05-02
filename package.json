@@ -1,8 +1,8 @@
 {
-  "name": "clustermeter",
+  "name": "evil-kittens",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "simple.js",
   "scripts": {
     "test": "echo \"You need some tests my friend.\" && exit 1"
   },
@@ -17,6 +17,7 @@
     "gulp-load-plugins": "^0.10.0",
     "gulp-plumber": "^1.0.0",
     "gulp-task-listing": "^1.0.0",
+    "jade": "^1.9.2",
     "jshint-stylish": "^1.0.1",
     "morgan": "^1.5.2",
     "run-sequence": "^1.1.0"

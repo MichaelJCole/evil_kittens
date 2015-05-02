@@ -1,0 +1,15 @@
+doctype html
+html
+  head
+    title my jade template
+  body
+    h1 Hello, we're some evil kittens.
+    img(height=200, src="/big-kittens-in-your-memory/1")
+    img(height=200, src="/big-kittens-in-your-memory/2")
+    img(height=200, src="/big-kittens-in-your-memory/3")
+
+    h2 Would you like to play?
+    ul
+      for route in routes
+        li
+          a(href="#{route}", target="_blank") #{route}

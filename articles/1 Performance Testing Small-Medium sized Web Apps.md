@@ -99,13 +99,15 @@ If you'd like to deploy to heroku,
 
     # If you log aint.
     heroku login
-    #
-    heroku app create
-    heroku init
+    # Create an app
+    heroku create
+    # Add load testing services
+    heroku addons:add blazemeter:test
+    heroku addons:add loaderio:basic
+    heroku addons:add blitz:250
+    # Deploy
     git push heroku master
-    heroku add 
-    heroku add
-    heroku add
+    # Open in browser
     heroku open
 
 It was created to be fun, innocent, and destructive.
