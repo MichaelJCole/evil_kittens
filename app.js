@@ -67,7 +67,7 @@ module.exports = function(config) {
       if (n <= 1) return n;
       else return fib(n-1) + fib(n-2);
     }
-    return res.send(req.kittens.id + ' splodin your cpu for fib(39)' + fib(39));
+    return res.send(req.kittens.id + ' splodin your cpu for fib(30)' + fib(30));
   });
 
   app.get('/evil-kittens-sploding-your-disk/:id', function(req, res, next) {
