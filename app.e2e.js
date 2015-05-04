@@ -14,7 +14,6 @@ var app = 'http://localhost:8000';
 
 // Put this in our helper.
 function request(toTest) {
-  console.log(process.env.HTTP_PROXY);
   if (typeof toTest === 'string') {
     return hippie().base(toTest);
   }

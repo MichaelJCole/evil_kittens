@@ -1,7 +1,10 @@
 'use strict';
 
 var supertest = require('supertest');
+
+/* This doesn't work due to version compatibility
 require('superagent-proxy')(supertest);  // decorates supertest with .proxy()
+*/
 
 // Note: If we want to record our api requests with a proxy, 
 // we'll need to use a proxy.  Superagent doesn't respect 'http_proxy' 
@@ -19,13 +22,14 @@ var proxy = process.env.http_proxy || false;
 // Monkey-patch superagent to use proxy.  Put this in our helper.
 function request(toTest) {
   var agent = supertest.agent(toTest);
-
+/* This doesn't work due to version incompatibilities
   if (proxy) {
     agent.endProxy = function (cb) {
       this.proxy(proxy);
       return this.end(cb);
     };
   }
+*/
   return agent;
 }
 
@@ -42,7 +46,6 @@ describe('evil-kittens API ', function(){
   });
 
   it ('gets an evil kitten - leak memory and disk', function(done){
-    console.log(process.env.HTTP_PROXY);
     request(app)
     .get('/evil-kittens-sploding-your-disk/'+ Math.random())
     .expect(200)

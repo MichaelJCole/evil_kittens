@@ -7,14 +7,15 @@ module.exports = function(config) {
   var express = require('express');
   var app = express();
 
-  app.use(require('morgan')('dev')); // log requests to console.
+  // Turning logging off increased throughput ~80%
+  //app.use(require('morgan')('dev')); // log requests to console.
 
   // Get some data to serve
 
   var kittenNames = [];
   var kittenJpgs = [];
 
-  // Load kittens - notice the new fs.readdirSync() functions in 0.12.
+  // Load kittens - notice the new fs.readdirSync() functions in Node.js 0.12.
   fs.readdirSync(__dirname + '/kittens').forEach(function(name) {
     kittenNames.push(name);
     kittenJpgs.push(fs.readFileSync(__dirname + '/kittens/' + name));  // This is a buffer.

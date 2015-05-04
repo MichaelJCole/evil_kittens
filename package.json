@@ -24,6 +24,7 @@
     "mocha": "^2.2.4",
     "morgan": "^1.5.2",
     "require-new": "^1.0.2",
-    "run-sequence": "^1.1.0"
+    "run-sequence": "^1.1.0",
+    "supertest": "^0.15.0"
   }
 }

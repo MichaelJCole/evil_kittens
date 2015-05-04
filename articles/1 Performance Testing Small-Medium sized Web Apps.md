@@ -1,6 +1,6 @@
 # Agile Performance Testing for Web Apps
 
-'We deployed our web app once, finished the beta, everyone signed up, and we never had a problem.'  - No one ever
+'We deployed our web app once, finished the beta, everybody signed up, and we never had a problem.'  - No one ever
 
 Unit testing gives us confidence to improve software features and add new ones.
 
@@ -168,9 +168,7 @@ JMeter was created in the caveman era of 1998 - before Agile.  It's documentatio
 
 JMeter/etc are still useful for enterprises with 'test labs', but I'm going to guess most 'Agile' teams would rather build features than 'test labs'.  Luckily Cloud Computing let's you quickly rent one (see below).
 
-17 years is a respectable run for any software (that's ~350 in software-years), and remembering that was vital to my happiness.
-
-## The simplest thing that could possibly work
+# A simple Load Test
 
 [ApacheBench](http://httpd.apache.org/docs/2.2/programs/ab.html) is simple, light-weight, and scriptable.  If you have Apache installed, you already have it installed.
 
@@ -232,7 +230,7 @@ Percentage of the requests served within a certain time (ms)
 
 That's alot of copy/paste, but you can see some basic and useful information.  response time average, response time distribution, etc. 
 
-Your OS has a resource utilization viewer (notice the kernel switch node.js between cores):
+Your OS has a resource utilization viewer (notice the the node.js process switching between cores):
 
 ![First Load Test](./screenshots/1-first-load-test.png "First Load Test")
 
@@ -242,28 +240,33 @@ The actual times don't predict production performance.  But comparing the two te
 
 Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests, but it takes multiple requests to make a 'use case'.  For that, we'll need something stronger.
 
-## Using the End-to-end tests you already have
+## An Endurance Test
 
-If you're worried about feature performance, you've probably already written end-to-end tests for your server API to test feature correctness and document use cases.  Those e2e tests are in something best suited for your app (aka not JMeter).
+So we've got two nasty resource leaks in our API:
+ - Every new :id leaks 1 meg of memory
+ - `evil-kittens-sploding-your-disk/id` also writes 1 meg to the disk.
 
-```
+Eventually our server will 'randomly' crash and we'd rather that happened during testing.  That test is an Endurance test.
 
-```
+### Using what we already have
 
-`evil-kittens` were built using Node.js and Express, so naturally we'd use Mocha to test them.  `npm test` will run the tests for us:
+If you're doing performance testing, you've probably already written end-to-end tests for your features.  It would be great to reuse those tests right?
+
+`evil-kittens` was built using Node.js and Express, so naturally we'd write tests with Mocha and Supertest.  `npm test` will run the tests for us:
 
 ```
 $ npm test
 
-  Get a random tiny kitten
-    ✓ get a random tiny kitten (140ms)
+  evil-kittens API 
+    ✓ gets a random tiny kitten - leak memory (292ms)
+    ✓ gets an evil kitten - leak memory and disk (51ms)
 
-  1 passing (161ms)
+  2 passing (348ms)
 ```
 
-That's great.  Let's make it an Endurance Test.  We'll do it two ways.
+Ok, let's start.  (BTW, you're checking your slow tests right?)
 
-### Simplest Endurance Test that could possibly work
+### Simple things that don't work.
 
 What about:
 
@@ -271,18 +274,26 @@ What about:
 for i in {1..1000}; do npm test > /dev/null; done
 ```
 
-That takes forever.  There's alot of scaffolding being setup and torn down for each iteration.  `mocha endurance.perf.js` uses `require-new` speed it up to half forever.  The real 'problem' here is Mocha wasn't designed to generate loads for performance testing.
+That takes forever.  There's alot of scaffolding being setup and torn down for each iteration.  `mocha etc/endurance.perf.js` uses `require-new` speed it up a bit but not enough.  The real 'problem' here is Mocha wasn't designed to generate loads for performance testing - they're different things.
+
+There may be platform specific tools available, but if not we'll have to use something more general.
 
 > Scala: Check out [getling.io](http://gatling.io/) 
-> Python:  Check out [locust.io](http://locust.io/) (it wouldn't install on Ubuntu)
+> Python:  Check out [locust.io](http://locust.io/) 
 
 ### Using JMeter
 
-At some point, we're both going to run out of interest in this article, so here comes less detail and more jazz-hands.
+JMeter is a Load Testing Tool focused on web applications.  It not only sends thousands of requests, but can tracks responses and make assertions.
 
-JMeter is a Load Testing Tool focused on web applications.  It's 'recorder' sets up a http proxy that will "write your tests for you".  You can record tests with a browser, but let's record the Mocha tests we've already written.  (FIXME Supertest doesn't support this?)
+The first version of JMeter is around 1998.  17 years is a respectable run for any software (that's ~350 in software-years), and remembering that was vital to my happiness using it.
 
-We are traveling back in time to 2001 Enterprise Java, so expect the unexpected.  
+It offer's a 'recorder' http proxy that will "write your tests for you".  Tests can be recorded from browser interactions or the command line.
+
+We're about to travel back in time - the Y2K bug, the dawn of Enterprise Java - so expect the unexpected!
+
+> Note: If you're really interested in Cloud Performance testing, start skimming.
+
+![Starting JMeter](./screenshots/1-start-jmeter.png "Start JMeter")
 
 First, install [JMeter](http://jmeter.apache.org/index.html), and the [standard and extras](http://jmeter-plugins.org/wiki/Start/) plugins:
 
@@ -294,45 +305,83 @@ wget -qO- -O tmp.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extr
 cd ..
 ```
 
-(Don't worry about replacing LICENSE and README.  Windows users might find this[guide](http://www.guru99.com/guide-to-install-jmeter.html) useful)
+(Yes or No to replacing LICENSE and README.  Windows users might find this[guide](http://www.guru99.com/guide-to-install-jmeter.html) useful)
 
-Start JMeter like this:
+Start JMeter:
 
 ```
 ./apache-jmeter-2.13/bin/jmeter
 ```
 
-You should see something like this:
-
-![Starting JMeter](./screenshots/1-start-jmeter.png "Start JMeter")
-
 To record a test plan, 
   - "File -> Templates -> Select Template: 'Recording' -> Create".  
   - Open 'Workbench', 
   - Select 'HTTP(S) Test Script Recorder'
-  - Scroll down and click 'Start', click Ok.
+  - Scroll down and click 'Start' at the bottom, click 'Ok'.
 
-There is now a proxy on port 8888.  Let's run our Mocha tests through it:
+There is now a proxy on port 8888.  Note that this isn't a 'transparent proxy'.  Clients must do some extra work crafting requests for them to be proxied (and therefor recorded by JMeter).
+
+You can 'record' requests by [configuring your browser](http://www.wikihow.com/Change-Proxy-Settings), or from the command line via an environment variable: 
+
+```
+http_proxy="http://localhost:8888/" wget http://localhost:8000/
+```
+
+Let's run our Mocha tests through it:
 
 ```
 http_proxy="http://localhost:8888/" npm test
 ```
 
-> Node.js: Supertest doesn't [respect process.env.http_proxy](https://github.com/visionmedia/supertest/issues/214).  So I re-wrote my tests using a patched version of 'Hippie', which uses 'request', which uses http_proxy.
+> Node.js:  Unfortunately Supertest isn't the answer.  It doesn't [respect process.env.http_proxy](https://github.com/visionmedia/supertest/issues/214).  I re-wrote the kitten tests using a patched version of 'Hippie', which uses the newest 'request', which uses process.env.http_proxy.
+> If this seems like alot of work and caveats, it is.  It would be better to record these requests on the server instead of through a proxy.
 
-This also works great:
-```
-http_proxy="http://localhost:8888/" wget http://localhost:8000/http://localhost:8000/evil-kittens-sploding-your-cpu/1000
-```
+Great, now we're recorded or written a pile of HTTP requests in our JMeter test.  JMeter lets us replay those requests rapidly by creating 'threads' (aka users/agents).  These threads run simultaneously, and can loop over the requests.
 
+JMeter was designed as it's own E2E testing tool, so can do assertions and other complexities.
 
+**At some point, we're both going to run out of interest in this article, so let's wrap this up and get to cloud testing.**  
 
+#### Localhost JMeter Endurance Test 
 
+  - Open `endurance.jmx` to see our endurance test plan.  
+    - 'User Defined Variables' sets server, port, 100 threads, and 100 loops.
+    - Requests have randomized id's to expose the leaks.
+    - All requests should respond 200.
+  - Click the green triangle to run the tests.
+  - Click around on the reports
 
-> Note.  My System76 laptop has 8 cores, 16 gig of mem, and a 256 gig SSD (seemed necessary at the time).  The Heroku instance has 1 core, .5 gig of mem, and .2 gigs of disk.  So Endurance Tests will have to work 8-32-1000x harder and longer on my laptop.  This is a good reason to use a Virtual Machines while testing.
+![Test Results](./articles/screenshots/5-jmeter-results.png "Test Results")
+![Throughput](./articles/screenshots/4-jmeter-hits-per-second.png "Throughput")
+![Memory Leak](./articles/screenshots/3-endurance-test-memory-leak.png "Memory Leak")
 
-If you'd like to run these tests in a Virtual Machine, let's use [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html).
+### Server Hardware and Configuration
 
-```
-FIXME Vagrant steps
-```
+On my laptop, I leaked 1 meg/request on 10,000 requests but didn't fail.  
+
+| System              | CPU's    | Memory | Disk        |
+| ------------------- | -------- | ------ | ----------- |
+| My System76 laptop  |  8 cores | 16 gig | 256 gig SSD |
+| Heroku Free Node    |  1 core  | .5 gig | .2 gig      | 
+
+So our free Heroku instance is 8-32-1000x more fragile that my laptop.  
+
+We can improve our Endurance test by using a virtual machines, with a great tool called [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html) and [Vagrant-Heroku](https://github.com/ejholmes/vagrant-heroku#building-from-scratch)
+
+## Localhost Testing Takeaways
+
+Here are my takeaways from localhost testing.  
+
+1) Localhost let's us do iterative improvements with Load and Endurance testing.  We can't do Stress or Spike testing, because those are about hardware and configuration.
+
+2) Simple is better.  `ab` can generate test loads for endurance and load testing.  Your test framework is already telling you which tests are slow.
+
+3) We've already written E2E tests, but converting them to a Test Load is non-trivial.
+
+4) JMeter is a powerful tool for writing E2E load tests.  **In my experience, JMeter is a useful tool, but takes a large investment of time.**  
+
+5) Considering the learning curve for creating, maintaining, and sharing tests, `ab` is probably more productive.
+
+6) For an enterprise building a test lab, JMeter would be an essential tool.  But we're Agile, so let's rent one from the cloud.
+
+# 
