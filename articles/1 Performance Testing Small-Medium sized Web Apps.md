@@ -447,22 +447,35 @@ Let's take a look at their more light-weight offering.  Blazemeter offers a "Htt
 
 ![articles/screenshots/Blazemeter*.png]
 
+Blazemeter is only offering a free version through Heroku.  They offer monthly plans for $249+/mo. 
+
 ## Blitz
 
 Blitz is a bit more suited to running Stress and Spike testing.  Their freemium option offers a 60 second 'rush' that looks suitable for doing Stress and Spike testing.  The service seems to ramp up users slowly, so it never got into the thousands, but 242 requests/seconds is pretty informative.  The UI is easy to understand, and in about 2 minutes you'll have a result.  This is starting to feel Agile.
 
 ![articles/screenshots/Blitz*]
 
-There were some other offerings from Heroku, but I had some trouble with them, so gave them a pass.
+Unfortunately, their pricing is $799+/month, so we didn't test that.
+
+There are lots of other load testing services.
+
+## Loader.io
+
+While a bit annoying to verify the domain, it just took a minute to add the route.  Loader.io is the most reasonable priced at $99/mo, with some generous offerings re: number of clients.  We were able to do 10k/min, or 166 requests/second without any ramp-up time.  While far from a kitten spike test, their $99/mo offer is for 10x that.
+
+Overall, Blitz and Loader.io felt the most Agile in terms of firing up a server and running some tests, while Blazemeter is a great offering for distributing load from JMeter and Selenium/Webdriver tests.
+
+![articles/screenshots/Loader.io*]
+
 
 # The End already.
 
-So, we looked at:
+So, that was quite a journey!  We looked at:
 
- - 4 kinds of tests:  Load, Endurance, Stress, and Spike.
+ - 4 kinds of tests:  Load, Endurance, Stress, and Spike.  
  - 2 kinds of testing: localhost (for dev) and cloud (for devops)
- - localhost tools: `ab`, JMeter, Mocha
- - Cloud testing offerings: Blazemeter and Blitz
+ - localhost testing tools tools: `ab`, JMeter, Mocha
+ - Cloud testing offerings: Blazemeter, Blitz, and Loader.io
  - Some adorable kittens
 
-There's alot more we could cover, but to get started and stay Agile, I don't think we have to.
+There's alot more we could cover, but there's enough here for an iteration of performance testing, and that's what staying Agile is all about.
