@@ -8,16 +8,13 @@ Performance testing gives us confidence to offer those features reliably to know
 
 Performance testing web apps was invented before the cloud.  Much of the information around performance testing is aimed at large enterprise projects with enterprise resources.  'Agile' means leaner, smaller, and iterative.  
 
-We'll be looking at Agile Performance testing strategies.
-
-In this article, we'll:
+This article looks at Agile Performance testing strategies.  We'll:
 
   - Build a small web app.  
-  - Deploy it.
-  - Test it on our local machine
-  - Crush it in the cloud.
+  - Deploy it 
+  - Performance test it with a variety of tools and techniques
 
-We'll look at two broad strategies for running performance tests: Local network, and Cloud-based.
+We'll look at two broad strategies for running performance tests: Local, and Cloud.
 
 But first, a little vocabulary and structure.
 
@@ -27,20 +24,20 @@ But first, a little vocabulary and structure.
 
 There are some exotic animals out there, but the most common are:
 
-  - **Load testing** performance under a certain load. *Can we support 1000 simultaneous users on this server?*
+  - **Load testing** measures how long to process a specific load. *How long does it take to process 10,000 requests?*
 
-  - **Endurance/Soak testing** sustained use to detect resource leaks.  *How often will it "randomly" crash?*
+  - **Endurance/Soak testing** measures resource leaks (usually memory and disk) over sustained use.  *How often will the server "randomly" crash?*
 
-  - **Stress testing** the upper performance limit before failure.  *How many users can this server support?*
+  - **Stress testing** measures the upper performance limit before failure.  *Can it support 10,000 users simultaneously?*
 
-  - **Spike testing** testing sudden increased load.  *Slashdot effect testing*
+  - **Spike testing** applies sudden increased load and measures results.  *Slashdot effect testing*
 
 Asking these specific questions is part of asking the general question *How and when should I scale my web application?*  Luckily these different tests all have the same structure.
 
 
 ## Anatomy
 
-Any good performance test will have these parts:
+Any successful performance test will have these parts:
 
   - **Server Under Test**: Software, hardware, and configuration. 
 
@@ -71,19 +68,19 @@ Performance testing should be done with a clear question or vision:
 
   - *I want each server to serve 1000 requests/second, without crashing or serving errors.*
 
-  - *I want my web application to serve 70,000 requests/second.*
+  - *We have a marketing event.  The web applicaton needs to serve 70,000 requests/second.*
 
 Once you have that, you'll have clear goals to iterate towards, and cut through lots of unnecessary effort.
 
 # Server Under Test
 
-Enough Preamble.  We need an API to crush.  Because we'll be here awhile, let's look at some kittens.  
+Enough Preamble.  We need an API to test.  Because we'll be here awhile, let's look at some kittens.  
 
 ## Application API
 
 These strategies and tools apply to any web app, on any hosting.
 
-We're using [Node.js](https://nodejs.org/) hosted on [Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs#introduction), because we had to pick something and Heroku Add-ons make it easy.
+We're using [Node.js](https://nodejs.org/) hosted on [Heroku](https://devcenter.heroku.com/articles/getting-started-with-nodejs#introduction), because we had to pick something and Heroku Add-ons make it easy to blog about.
 
 Our API has these routes:
 
@@ -96,13 +93,13 @@ Our API has these routes:
 
 :id is any string, used to cycle through the images, and memory leak 1mb/id.
 
-Here's FIXME an Express 4.0 app implementing this API.  This server is neither secure or performant.  If you read the last few calls, you'll see it's small, cute, and shamelessly destructive.
+Here's FIXME-github-link an Express 4.0 app implementing this API.  This server is neither secure or performant.  If you read the last few calls, you'll see it's small, cute, and shamelessly destructive.
 
 ## Server hardware and configuration
 
 This article describes two servers under test, with strategies and things to be gained from each.
 
-### Localhost Server Under Test
+### Starting a Localhost Server To Test
 
 If you'd like to play along, the code's on Github:
 
@@ -116,22 +113,22 @@ If you're installing Node for the first time, [nvm(node version manager)](https:
 
 Open <a href="http://localhost:8000">http://localhost:8000</a> to test.
 
-### Cloud Server Under Test
+### Starting a Cloud Server To Test
 
-If you don't want to install node, you can still play along with a cloud server on Heroku.
+If you don't want to install Node.js, you can still play along with a cloud server on Heroku.
 
     # Get the code.
     git clone FIXME
     cd FIXME
-    # Log in if you log aint.  
+    # Create a Heroku account and log in
     heroku login
-    # Create an app
+    # Create Heroku app and add git remote 'heroku'
     heroku create
     # Add load testing services
     heroku addons:add blazemeter:test
     heroku addons:add loaderio:basic
     heroku addons:add blitz:250
-    # Logging
+    # Add a remote logging service
     heroku addons:add papertrail:choklad
     # Deploy
     git push heroku master
@@ -140,7 +137,7 @@ If you don't want to install node, you can still play along with a cloud server 
     # Open log in browser
     heroku addons:open papertrail
 
-It was created to be fun, innocent, and destructive.
+This should open the app and log in your browser.  It was created to be fun, innocent, and really destructive.
 
 # Performance Testing on Localhost
 
@@ -148,7 +145,7 @@ What can we test on localhost?
 
 **We can't do Stress Testing or Spike Testing**.  These are both 'destructive' testing trying to overwhelm the server.  Measuring the 'destruction' means measuring against the 'production configuration'.
 
-Are those errors because the server failed?  Or was it the JVM (JMeter) or Python (Gatling.io, locust.io), or was it the network driver?
+Are those server code errors?  Or the configuration of your environment?  Was it the testing tool (JMeter) or Python (Gatling.io, locust.io)?  Your network driver?
 
 Simply put, Stress and Spike testing require a set of clients that can overwhelm the server.  We can't do that all on the same machine.
 
@@ -156,76 +153,75 @@ Simply put, Stress and Spike testing require a set of clients that can overwhelm
 
 Simply put, performance testing on localhost is a dev task.
 
-But what about setting up a 'test lab' in my office?  Pull up a chair, let me tell you a story...
+## A simple Load Test
 
-> Back in the caveman days of the 1990's, we had to program computers with rocks, fire, and C++.  There was no wifi (literally not invented), and 'web hosting' meant a strip-mall data center with a locked 'cage' containing an ethernet cable and clean power.  You bought your own server, which arrived in a cow-colored box, then drove it to the 'cage' to install yourself.  It was a fun day-trip, except when dinosaurs attacked.  
-> Ops (devops not invented) bought two sets of hardware, one they locked in the 'cage', and one for the 'test lab'.  The test lab was on the local network so you could do distributed load testing from your co-workers desktops.  A desktop is...
-(This should be an info-graphic)
-
-Why the old-timey grandpa stories?  Because in the old days, web development meant hardware.  Now, we spin up servers at data centers around the globe, while sipping iced coffee in Thai cafes.
-
-JMeter was created in the caveman era of 1998 - before Agile.  It's documentation and UI will lead Agile devops teams in the wrong direction.
-
-JMeter/etc are still useful for enterprises with 'test labs', but I'm going to guess most 'Agile' teams would rather build features than 'test labs'.  Luckily Cloud Computing let's you quickly rent one (see below).
-
-# A simple Load Test
-
-[ApacheBench](http://httpd.apache.org/docs/2.2/programs/ab.html) is simple, light-weight, and scriptable.  If you have Apache installed, you already have it installed.
+[ApacheBench](http://httpd.apache.org/docs/2.2/programs/ab.html) is simple, light-weight, and scriptable.  You may already have `ab` installed:
 
 ```
 sudo apt-get install apache2-utils
 ```
 
-Ok, let's load test some kittens (500 requests, 5 concurrency):
+So let's test a change.  There are two versions of the server: `simple.js` with logging, and `simple2.js` without logging.
+
+Start up the server in one console: `node simple.js`
+
+Run the tests in another console.  -n means 10000 requests. -c means 10 threads concurrently.  -l means don't count variable length response as an error.
 
 ```
-$ ab -n 500 -c 5 http://localhost:8000/evil-kittens-sploding-your-cpu/1000
+$ ab -l -n 10000 -c 10 http://localhost:8000/big-kittens-in-your-memory/simple
+This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
 
 Benchmarking localhost (be patient)
-Completed 100 requests
-Completed 200 requests
-Completed 300 requests
-Completed 400 requests
-Completed 500 requests
-Finished 500 requests
+Completed 1000 requests
+Completed 2000 requests
+Completed 3000 requests
+Completed 4000 requests
+Completed 5000 requests
+Completed 6000 requests
+Completed 7000 requests
+Completed 8000 requests
+Completed 9000 requests
+Completed 10000 requests
+Finished 10000 requests
 
 
 Server Software:        
 Server Hostname:        localhost
 Server Port:            8000
 
-Document Path:          /evil-kittens-sploding-your-cpu/1000
-Document Length:        39 bytes
+Document Path:          /big-kittens-in-your-memory/simple
+Document Length:        Variable
 
-Concurrency Level:      5
-Time taken for tests:   30.002 seconds
-Complete requests:      500
+Concurrency Level:      10
+Time taken for tests:   3.433 seconds
+Complete requests:      10000
 Failed requests:        0
-Total transferred:      110000 bytes
-HTML transferred:       19500 bytes
-Requests per second:    16.67 [#/sec] (mean)
-Time per request:       300.019 [ms] (mean)
-Time per request:       60.004 [ms] (mean, across all concurrent requests)
-Transfer rate:          3.58 [Kbytes/sec] received
+Total transferred:      651885095 bytes
+HTML transferred:       650055095 bytes
+Requests per second:    2913.15 [#/sec] (mean)
+Time per request:       3.433 [ms] (mean)
+Time per request:       0.343 [ms] (mean, across all concurrent requests)
+Transfer rate:          185453.16 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       1
-Processing:    90  299  14.1    298     343
-Waiting:       88  298  14.1    297     342
-Total:         91  299  14.1    298     343
+Connect:        0    0   0.0      0       0
+Processing:     1    3   1.6      3      51
+Waiting:        1    3   1.6      3      50
+Total:          2    3   1.6      3      51
 
 Percentage of the requests served within a certain time (ms)
-  50%    298
-  66%    300
-  75%    301
-  80%    302
-  90%    306
-  95%    313
-  98%    328
-  99%    336
- 100%    343 (longest request)
-
+  50%      3
+  66%      3
+  75%      3
+  80%      3
+  90%      4
+  95%      4
+  98%      6
+  99%      7
+ 100%     51 (longest request)
 ```
 
 That's alot of copy/paste, but you can see some basic and useful information.  response time average, response time distribution, etc. 
@@ -234,9 +230,20 @@ Your OS has a resource utilization viewer (notice the the node.js process switch
 
 ![First Load Test](./screenshots/1-first-load-test.png "First Load Test")
 
-If we re-implemented `/evil-kittens-sploding-your-cpu/` and retested we'd see different response times.  
+Notice that Node.js is single threaded and serving 3k requests/second.  Nice!
+
+Let's turn off logging and see what happens:
+
+`ctrl-c` to kill the server, then `node simple2.js`.  Back to the test console and run it again.
 
 The actual times don't predict production performance.  But comparing the two tells us about our implementations.
+
+| Version          | 10k req   | req/s    | ms/req |
+| ---------------- | --------- | -------- | ------ |
+| A (with logging) | 3.433 sec | 2913.15  | 3.433  |
+| B (w/o logging)  | 2.279 sec | 4387.75  | 2.279  |
+
+So, logging requests to stdout is a 50% performance drag on our in-memory file server.  Noted!  
 
 Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests, but it takes multiple requests to make a 'use case'.  For that, we'll need something stronger.
 
@@ -248,7 +255,7 @@ So we've got two nasty resource leaks in our API:
 
 Eventually our server will 'randomly' crash and we'd rather that happened during testing.  That test is an Endurance test.
 
-### Using what we already have
+### Reusing what we already have
 
 If you're doing performance testing, you've probably already written end-to-end tests for your features.  It would be great to reuse those tests right?
 
@@ -264,34 +271,28 @@ $ npm test
   2 passing (348ms)
 ```
 
-Ok, let's start.  (BTW, you're checking your slow tests right?)
+Ok, so our API is pretty stateless (except for the memory leak), but let's pretend these tests needed to be run in order.
 
-### Simple things that don't work.
+Bash scripting is too much scaffolding.  But we could write a test and time it in our test runner.  The hack in `mocha` is to use `require-new`.  
 
-What about:
+`time mocha -R min etc/throughput.perf.js`, but still can do ~333 requests/second and is only running in one thread.
 
-```
-for i in {1..1000}; do npm test > /dev/null; done
-```
-
-That takes forever.  There's alot of scaffolding being setup and torn down for each iteration.  `mocha etc/endurance.perf.js` uses `require-new` speed it up a bit but not enough.  The real 'problem' here is Mocha wasn't designed to generate loads for performance testing - they're different things.
-
-There may be platform specific tools available, but if not we'll have to use something more general.
+You might find these tools helpful for your platform.
 
 > Scala: Check out [getling.io](http://gatling.io/) 
 > Python:  Check out [locust.io](http://locust.io/) 
 
+For something with more teeth, let's take a look at JMeter.
+
 ### Using JMeter
 
-JMeter is a Load Testing Tool focused on web applications.  It not only sends thousands of requests, but can tracks responses and make assertions.
+JMeter does:
+ - End-to-end testing
+ - Runs those tests in 'threads' to simulate multiple users
 
-The first version of JMeter is around 1998.  17 years is a respectable run for any software (that's ~350 in software-years), and remembering that was vital to my happiness using it.
+The first version of JMeter is from 1998.  17 years is a respectable run for any software (that's ~350 in software-years), and remembering that was vital to my happiness using it.
 
 It offer's a 'recorder' http proxy that will "write your tests for you".  Tests can be recorded from browser interactions or the command line.
-
-We're about to travel back in time - the Y2K bug, the dawn of Enterprise Java - so expect the unexpected!
-
-> Note: If you're really interested in Cloud Performance testing, start skimming.
 
 ![Starting JMeter](./screenshots/1-start-jmeter.png "Start JMeter")
 
@@ -314,12 +315,13 @@ Start JMeter:
 ```
 
 To record a test plan, 
+
   - "File -> Templates -> Select Template: 'Recording' -> Create".  
   - Open 'Workbench', 
   - Select 'HTTP(S) Test Script Recorder'
   - Scroll down and click 'Start' at the bottom, click 'Ok'.
 
-There is now a proxy on port 8888.  Note that this isn't a 'transparent proxy'.  Clients must do some extra work crafting requests for them to be proxied (and therefor recorded by JMeter).
+Port 8888 is now a proxy server. Note that this isn't a 'transparent proxy', so HTTPS requests require special shenanigans (that was the 'ok' dialog).  Clients must do some extra work crafting requests for them to be proxied (and therefor recorded by JMeter).
 
 You can 'record' requests by [configuring your browser](http://www.wikihow.com/Change-Proxy-Settings), or from the command line via an environment variable: 
 
@@ -338,11 +340,9 @@ http_proxy="http://localhost:8888/" npm test
 
 Great, now we're recorded or written a pile of HTTP requests in our JMeter test.  JMeter lets us replay those requests rapidly by creating 'threads' (aka users/agents).  These threads run simultaneously, and can loop over the requests.
 
-JMeter was designed as it's own E2E testing tool, so can do assertions and other complexities.
+JMeter was designed as it's own E2E testing tool, so can do assertions and other complexities.  Need cookies?  'Right-click -> Add -> Config Element'
 
-**At some point, we're both going to run out of interest in this article, so let's wrap this up and get to cloud testing.**  
-
-#### Localhost JMeter Endurance Test 
+### Localhost JMeter Endurance Test 
 
   - Open `endurance.jmx` to see our endurance test plan.  
     - 'User Defined Variables' sets server, port, 100 threads, and 100 loops.
@@ -355,33 +355,114 @@ JMeter was designed as it's own E2E testing tool, so can do assertions and other
 ![Throughput](./articles/screenshots/4-jmeter-hits-per-second.png "Throughput")
 ![Memory Leak](./articles/screenshots/3-endurance-test-memory-leak.png "Memory Leak")
 
+For raw throughput on our simple in-memory request, JMeter was on par with `ab`.  See `etc/throughput.jmx`.
+
 ### Server Hardware and Configuration
 
-On my laptop, I leaked 1 meg/request on 10,000 requests but didn't fail.  
+On my laptop, I leaked 1 meg/request on 10,000 requests with 0 failures.  It took my laptop right up to it's 16 gig limit.  
 
 | System              | CPU's    | Memory | Disk        |
 | ------------------- | -------- | ------ | ----------- |
 | My System76 laptop  |  8 cores | 16 gig | 256 gig SSD |
 | Heroku Free Node    |  1 core  | .5 gig | .2 gig      | 
 
-So our free Heroku instance is 8-32-1000x more fragile that my laptop.  
+Our free Heroku instance is 8-32-1000x more fragile that my laptop.  
 
-We can improve our Endurance test by using a virtual machines, with a great tool called [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html) and [Vagrant-Heroku](https://github.com/ejholmes/vagrant-heroku#building-from-scratch)
+The best way to do this is with a Virtual Machine, for example [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html)
+
+> Heroku:  Note that `heroku local` doesn't set memory limits.  You might try [Vagrant-Heroku](https://github.com/ejholmes/vagrant-heroku#building-from-scratch).
 
 ## Localhost Testing Takeaways
 
-Here are my takeaways from localhost testing.  
+1) Testing on localhost allows interative performance improvements.  We can do Load and Endurance testing, and compare the results.  We can't do Stress or Spike testing, because those are about hardware and configuration.
 
-1) Localhost let's us do iterative improvements with Load and Endurance testing.  We can't do Stress or Spike testing, because those are about hardware and configuration.
+2) Simple is better.  `ab` can generate test loads for endurance and load testing.  It doesn't get the Google SEO love, but it's a good place to start.
 
-2) Simple is better.  `ab` can generate test loads for endurance and load testing.  Your test framework is already telling you which tests are slow.
+3) Use what you already have.  If you can, re-use existing end-to-end tests for Load and Endurance testing.
 
 3) We've already written E2E tests, but converting them to a Test Load is non-trivial.
 
-4) JMeter is a powerful tool for writing E2E load tests.  **In my experience, JMeter is a useful tool, but takes a large investment of time.**  
+4) JMeter is a powerful tool for writing E2E load tests.  **In my experience, JMeter is a useful tool, but takes a large investment of time.** 
 
 5) Considering the learning curve for creating, maintaining, and sharing tests, `ab` is probably more productive.
 
 6) For an enterprise building a test lab, JMeter would be an essential tool.  But we're Agile, so let's rent one from the cloud.
 
-# 
+Why not build a test lab? you ask.  Pull up a chair, and let me tell you a story...
+
+> Back in the caveman days of the 1990's, we had to program computers with rocks, fire, and C++.  There was no wifi (literally not invented), and 'web hosting' meant a strip-mall data center with a locked 'cage' containing an ethernet cable and clean power.  You bought your own server, which arrived in a cow-colored box, then drove it to the 'cage' to install yourself.  It was a fun day-trip, except when dinosaurs attacked.  
+> Ops (devops not invented) bought two sets of hardware, one they locked in the 'cage', and one for the 'test lab'.  The test lab was on the local network so you could do distributed load testing from your co-workers desktops.  A desktop is...
+
+Why the old-timey grandpa stories?  Because in the old days, ops meant spare cables and screwdrivers.  Now, Agile teams spin up servers at data centers around the globe, while sipping iced coffee in Thai cafes.
+
+It's important to remember many of these tools were built in the caveman era - before Agile.  Their heavy-weight design and UI may lead Agile devops teams in the wrong direction.
+
+JMeter/etc are still useful for enterprises with 'test labs', but I'm going to guess most 'Agile' teams would rather build features than 'test labs'.  Luckily Cloud Computing let's you quickly rent one.
+
+# Performance Testing in the Cloud
+
+Because our little Heroku server is in a production-like configuration, we can now do Stress and Spike Testing.
+
+Let's take another look at our server
+
+```
+git push heroku master
+heroku restart
+heroku open
+heroku addons:open papertrail
+```
+
+
+## From Localhost
+
+As a curiosity, we can test our Heroku instance from localhost.  If you've been following along with our `tiny/big-kittens-in-memory` examples, we could try them on Heroku to see throughput.  From Asia, I'm able to get 4.5/s on big-kittens, and 24.6/s on tiny kittens.  That's a *huge* difference from localhost servers (4k/s).
+
+We can also run our Endurance test from localhost.  Update `endurance.jmx`'s 'User Defined Variables':
+
+    - server -> <your heroku app domain>
+    - port -> 80
+
+Click run, and JMeter will start at ~ 20 requests/second.  You'll see literally thousands of log entries, but these are interesting:
+
+```
+May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Process running mem=2649M(517.4%) 
+May 04 02:18:35 protected-reaches-5163 heroku/router:  at=info method=GET path="/tiny-kittens-in-your-memory/2957382171" host=protected-reaches-5163.herokuapp.com request_id=ad3ffdf9-b5fa-4ca2-8c2a-1461909fc4e7 fwd="146.88.41.79" dyno=web.1 connect=0ms service=4041ms status=200 bytes=204 
+May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Error R15 (Memory quota vastly exceeded) 
+May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Stopping process with SIGKILL 
+```
+
+So finally our Endurance test found the memory leak.  Heroku killed our runaway process at 2.6 gig.  You'll see test errors as well in Jmeter.  (A smarter test would check process memory at shutdown)
+
+Let's open our [Heroku dashboard](https://dashboard.heroku.com/apps) and try some Cloud load testing tools.
+
+`heroku restart` will reboot your instance.
+
+## Blazemeter
+
+Blazemeter, as you could tell from the name, is excited to run your JMeter tests in the cloud.  They'll also run your Selenium WebDriver scripts.
+
+We can upload `endurance.jmx` to Blazemeter, but each change is ~5 mins to upload and retry.  That's not very exciting if you're not already heavily invested in JMeter.
+
+Let's take a look at their more light-weight offering.  Blazemeter offers a "Http Urls List Test" similar to our `ab` test.  Some screenshots below show the test and some results pages.  The freemium offering was making ~9 requests/second on our `tiny-kittens-in-your-memory` url.  Clearly, Blazemeter isn't overwhelming our server.
+
+![articles/screenshots/Blazemeter*.png]
+
+## Blitz
+
+Blitz is a bit more suited to running Stress and Spike testing.  Their freemium option offers a 60 second 'rush' that looks suitable for doing Stress and Spike testing.  The service seems to ramp up users slowly, so it never got into the thousands, but 242 requests/seconds is pretty informative.  The UI is easy to understand, and in about 2 minutes you'll have a result.  This is starting to feel Agile.
+
+![articles/screenshots/Blitz*]
+
+There were some other offerings from Heroku, but I had some trouble with them, so gave them a pass.
+
+# The End already.
+
+So, we looked at:
+
+ - 4 kinds of tests:  Load, Endurance, Stress, and Spike.
+ - 2 kinds of testing: localhost (for dev) and cloud (for devops)
+ - localhost tools: `ab`, JMeter, Mocha
+ - Cloud testing offerings: Blazemeter and Blitz
+ - Some adorable kittens
+
+There's alot more we could cover, but to get started and stay Agile, I don't think we have to.

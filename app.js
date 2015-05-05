@@ -8,7 +8,9 @@ module.exports = function(config) {
   var app = express();
 
   // Turning logging off increased throughput ~80%
-  //app.use(require('morgan')('dev')); // log requests to console.
+  if (config.logging) {
+    app.use(require('morgan')('dev')); // log requests to console.  
+  }  
 
   // Get some data to serve
 
