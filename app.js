@@ -85,6 +85,10 @@ module.exports = function(config) {
     return res.send(req.kittens.id + ' splodin your network with 512k to your browser: ' + crypto.randomBytes(1024*1024));
   });
 
+  app.get('/loaderio-443a6dc49f1041e0c37caa493184eb91.txt', function(req, res, next) {
+    return res.send('loaderio-443a6dc49f1041e0c37caa493184eb91');
+  });
+
   // Show home page with list of routes.
   app.get('/', function(req, res, next) {
     var list = [];
