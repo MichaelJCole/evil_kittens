@@ -95,27 +95,46 @@ Our API has these routes:
 
 Here's FIXME-github-link an Express 4.0 app implementing this API.  This server is neither secure or performant.  If you read the last few calls, you'll see it's small, cute, and shamelessly destructive.
 
+> READER BEWARE:  As cute as the pictures are, this server could be considered a denial-of-service attack, or wasteful use of resources by a hosting provider.  ESPECIALLY a shared hosting provider like Heroku.  It could cause others, and you, great suffering in downtime, account lock-outs, and/or legal aggression.  aka.  Don't come cryin to me.
+
 ## Server hardware and configuration
 
 This article describes two servers under test, with strategies and things to be gained from each.
 
 ### Starting a Localhost Server To Test
 
-If you'd like to play along, the code's on Github:
+If you'd like to play along and are using Node for the first time, [nvm (node version manager)](https://github.com/creationix/nvm) will greatly simplify your life.
 
-    # Download the code from github.
-    git clone FIXME
-    cd FIXME
-    npm install
-    node simple.js
+```
+curl https://raw.githubusercontent.com/creationix/nvm/v0.25.1/install.sh | bash
+```
 
-If you're installing Node for the first time, [nvm(node version manager)](https://github.com/creationix/nvm) will simplify your life.
+There's also a manual install.
+
+Now, install a new Node.js environment:
+
+```
+nvm install stable
+# Start a new shell
+bash 
+# You might want to put this in your shell startup
+nvm use stable
+```
+
+Great, here's the code on Github:
+
+```
+git clone FIXME
+cd FIXME
+npm install
+node simple.js
+```
 
 Open <a href="http://localhost:8000">http://localhost:8000</a> to test.
 
 ### Starting a Cloud Server To Test
 
-If you don't want to install Node.js, you can still play along with a cloud server on Heroku.
+If you don't want to install Node.js, you can still play along with a cloud server on Heroku, provided you have [heroku toolbelt](https://toolbelt.heroku.com/) and `git` installed.
 
     # Get the code.
     git clone FIXME
@@ -137,13 +156,13 @@ If you don't want to install Node.js, you can still play along with a cloud serv
     # Open log in browser
     heroku addons:open papertrail
 
-This should open the app and log in your browser.  It was created to be fun, innocent, and really destructive.
+This should open the app and a remote log in your browser.  It was created to be fun, innocent, and really destructive.  FIXME cat videos?  See below.
 
 # Performance Testing on Localhost
 
 What can we test on localhost?
 
-**We can't do Stress Testing or Spike Testing**.  These are both 'destructive' testing trying to overwhelm the server.  Measuring the 'destruction' means measuring against the 'production configuration'.
+**We can't do Stress Testing or Spike Testing**.  These are both 'destructive' tests trying to overwhelm the server.  Measuring the 'destruction' means measuring against the 'production configuration'.
 
 Are those server code errors?  Or the configuration of your environment?  Was it the testing tool (JMeter) or Python (Gatling.io, locust.io)?  Your network driver?
 
@@ -390,10 +409,10 @@ The best way to do this is with a Virtual Machine, for example [Vagrant](https:/
 
 Why not build a test lab? you ask.  Pull up a chair, and let me tell you a story...
 
-> Back in the caveman days of the 1990's, we had to program computers with rocks, fire, and C++.  There was no wifi (literally not invented), and 'web hosting' meant a strip-mall data center with a locked 'cage' containing an ethernet cable and clean power.  You bought your own server, which arrived in a cow-colored box, then drove it to the 'cage' to install yourself.  It was a fun day-trip, except when dinosaurs attacked.  
-> Ops (devops not invented) bought two sets of hardware, one they locked in the 'cage', and one for the 'test lab'.  The test lab was on the local network so you could do distributed load testing from your co-workers desktops.  A desktop is...
+> Back in the caveman days of the 1990's, we had to program computers with rocks, fire, and C++.  There was no wifi (literally not invented), and 'web hosting' meant a strip-mall data center with a locked 'cage' containing an ethernet cable and clean power.  You bought your own server, which arrived in a [cow-colored box](https://www.google.com/search?biw=1299&bih=730&tbm=isch&q=gateway+computer+box&revid=2106055813&sa=X&ei=tIVJVarHE4qouwTd_oGgCg&ved=0CCsQ1QIoBA&bav=on.2,or.r_cp.&bvm=bv.92291466,d.c2E&dpr=1), then drove it to the 'cage' to install yourself.  It was a fun day-trip, except when dinosaurs attacked.  
+> Ops (devops not invented yet) bought two sets of hardware, one they locked in the 'cage' (so the programmers couldn't touch it), and one for the 'test lab'.  The test lab was on the local network so you could do distributed load testing from your co-workers desktops.  A desktop is...
 
-Why the old-timey grandpa stories?  Because in the old days, ops meant spare cables and screwdrivers.  Now, Agile teams spin up servers at data centers around the globe, while sipping iced coffee in Thai cafes.
+Why the old-timey grandpa stories?  Because in the old days, ops meant spare parts and screwdrivers.  Now, Agile teams spin up servers at data centers around the globe, while sipping iced coffee in Thai cafes.
 
 It's important to remember many of these tools were built in the caveman era - before Agile.  Their heavy-weight design and UI may lead Agile devops teams in the wrong direction.
 
@@ -412,17 +431,20 @@ heroku open
 heroku addons:open papertrail
 ```
 
+As we're comparing the services below, it's important to remember our kitten app is a bit unique.  The server is just returning things from memory.  Most apps aren't going to be able to push 4.5k r/s.  The genesis of this article was load testing an all-memory app like this, hence my high standards.  
+
+I've written many servers that wouldn't have needed this much load to get meaningful results.
 
 ## From Localhost
 
-As a curiosity, we can test our Heroku instance from localhost.  If you've been following along with our `tiny/big-kittens-in-memory` examples, we could try them on Heroku to see throughput.  From Asia, I'm able to get 4.5/s on big-kittens, and 24.6/s on tiny kittens.  That's a *huge* difference from localhost servers (4k/s).
+As a curiosity, we can test our Heroku instance from localhost.  If you've been following along with our `tiny/big-kittens-in-memory` examples, we could try them on Heroku to see throughput.  From Asia, I'm able to get 4.5 r/s on big-kittens, and 24.6 r/s on tiny kittens.  That's a *huge* difference from localhost servers (4,000 r/s).
 
 We can also run our Endurance test from localhost.  Update `endurance.jmx`'s 'User Defined Variables':
 
     - server -> <your heroku app domain>
     - port -> 80
 
-Click run, and JMeter will start at ~ 20 requests/second.  You'll see literally thousands of log entries, but these are interesting:
+Click run, and JMeter will start at ~20 r/s.  You'll see literally thousands of log entries, but these are interesting:
 
 ```
 May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Process running mem=2649M(517.4%) 
@@ -431,7 +453,9 @@ May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Error R15 (Memory quota va
 May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Stopping process with SIGKILL 
 ```
 
-So finally our Endurance test found the memory leak.  Heroku killed our runaway process at 2.6 gig.  You'll see test errors as well in Jmeter.  (A smarter test would check process memory at shutdown)
+So finally our Endurance test found the memory leak.  Heroku killed our runaway process at 2.6 gig.  You'll see test errors as well in Jmeter.  (A smarter test would check process memory at shutdown).  
+
+Also, do note that Error R15 probably shows up on someone's dashboard at Heroku.
 
 Let's open our [Heroku dashboard](https://dashboard.heroku.com/apps) and try some Cloud load testing tools.
 
@@ -443,32 +467,230 @@ Blazemeter, as you could tell from the name, is excited to run your JMeter tests
 
 We can upload `endurance.jmx` to Blazemeter, but each change is ~5 mins to upload and retry.  That's not very exciting if you're not already heavily invested in JMeter.
 
-Let's take a look at their more light-weight offering.  Blazemeter offers a "Http Urls List Test" similar to our `ab` test.  Some screenshots below show the test and some results pages.  The freemium offering was making ~9 requests/second on our `tiny-kittens-in-your-memory` url.  Clearly, Blazemeter isn't overwhelming our server.
+Let's take a look at their more light-weight offering.  Blazemeter offers a "Http Urls List Test" similar to our `ab` test.  Some screenshots below show the test and some results pages.  The freemium offering was making ~9 requests/second on our `tiny-kittens-in-your-memory` url.  Clearly, Blazemeter isn't overwhelming our server.  Meh.
 
 ![articles/screenshots/Blazemeter*.png]
 
-Blazemeter is only offering a free version through Heroku.  They offer monthly plans for $249+/mo. 
+Blazemeter is only offering a free 'beta' version through Heroku.  Their website offers monthly plans at $249+/mo. 
 
 ## Blitz
 
-Blitz is a bit more suited to running Stress and Spike testing.  Their freemium option offers a 60 second 'rush' that looks suitable for doing Stress and Spike testing.  The service seems to ramp up users slowly, so it never got into the thousands, but 242 requests/seconds is pretty informative.  The UI is easy to understand, and in about 2 minutes you'll have a result.  This is starting to feel Agile.
+Blitz is more suited to running Stress and Spike testing.  Their freemium option offers a 60 second 'rush' that looks suitable for doing Stress and Spike testing.  The service seems to ramp up users slowly, so it never got into the thousands, but 242 requests/seconds is pretty informative.  The UI is easy to understand, and in about 2 minutes you'll have a result.  This is starting to feel Agile.
 
 ![articles/screenshots/Blitz*]
 
 Unfortunately, their pricing is $799+/month, so we didn't test that.
 
-There are lots of other load testing services.
-
 ## Loader.io
 
-While a bit annoying to verify the domain, it just took a minute to add the route.  Loader.io is the most reasonable priced at $99/mo, with some generous offerings re: number of clients.  We were able to do 10k/min, or 166 requests/second without any ramp-up time.  While far from a kitten spike test, their $99/mo offer is for 10x that.
+Loader.io almost got a pass because they didn't auto-verify the Heroku domain of our app.  While annoying, it just took a minute to add the route, and I was glad I did.
 
-Overall, Blitz and Loader.io felt the most Agile in terms of firing up a server and running some tests, while Blazemeter is a great offering for distributing load from JMeter and Selenium/Webdriver tests.
+Loader.io is the most reasonable priced at $99/mo, with some generous offerings re: number of clients.  We were able to do 10k/min, or 166 requests/second without any ramp-up time.  While far from a kitten spike test, their $99/mo offer is for 1666 r/s.
 
 ![articles/screenshots/Loader.io*]
 
+## Time to bring out the big guns.
 
-# The End already.
+Overall, Blitz and Loader.io felt the most Agile in terms of firing up a server and running some tests, while Blazemeter is a great offering for distributing load from JMeter and Selenium/Webdriver tests.
+
+So, our tour of online testing services was nice.  The fancy reports are worthy of management-by-colors (less red! more green!).  But they don't seem to integrate into a larger tool-chain, and as an engineer I don't feel satisfied we've pushed the kittens to their adorable limits!
+
+So it's time to bring out the big guns.  Mounted on a swarm of angry bees.  Courtesy of the Chicago Tribune.  [Bees with Machine Guns](https://github.com/newsapps/beeswithmachineguns) is an `ab` for the cloud.  
+
+'A utility for arming (creating) many bees (micro EC2 instances) to attack (load test) targets (web applications).  http://apps.chicagotribune.com/'
+
+> READER BEWARE:  Using BeesWithMachineGuns against someone elses site (or your site on a shared host) could be viewed ethically and legally as a denial-of-service attack.  It could cause others, and you, great suffering in downtime, AWS account lock-outs, or legal aggression.  aka.  Don't come cryin to me son.
+
+Great!  Rub hands together.  Let's begin.
+
+1) Install
+
+Python (like Node.js) runs as root by default on Ubuntu.  This is the ops equivalant of [clicking random popups](https://www.youtube.com/watch?v=_KHVKxXLpoA) in a browser.  It's better not to run random internet code as root, so let's use [virtualenv](http://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
+
+```
+sudo pip install virtualenv
+virtualenv killerbees
+cd killerbees
+# This is our project directory
+source bin/activate
+pip install beeswithmachineguns
+```
+
+2) AWS Credentials.  [Sign up](http://aws.amazon.com/).  
+
+a) Sign into the Console.
+Top left.  Your name -> Security Credentials -> Access Keys -> Generate.
+
+Put them into in a file called `.boto` in your home directory `~/`.  
+```
+[Credentials]
+aws_access_key_id = <your access key>
+aws_secret_access_key = <your secret key>
+```
+
+Secure that file:  `chmod 600 ~/.boto`
+
+[Absolutely, do not ever, check this file or .pem's into git.  Slap!](https://securosis.com/blog/my-500-cloud-security-screwup)  Note: this needs your attention or you will suffer.
+
+b) Switch to N. Virginia
+
+beeswithmachineguns uses an AMI stored in that region.  You can run it from anywhere, but you'll have to move/make the AMI.
+
+b) Make a security group.
+
+ - Console -> Services dropdown -> EC2 -> Key pairs -> Create Key Pair
+ - Name: 'adorable'
+ - A .pem will download.  Put this in .ssh
+
+c) public security group
+
+We need to talk to our bees after making them, so open port 22 for ssh
+
+ - Console -> Services dropdown -> EC2 -> Security Groups -> Create Security Group
+ - name and description -> 'public'
+ - Inbound -> Add Rule -> Type: 'ssh' -> Source: 'anywhere' -> Create
+
+3) Guns up!
+
+If the instructions were good, you should be getting some bees...
+
+```
+$ bees up -s 4 -g public -k adorable -z us-east-1e
+Connecting to the hive.
+Attempting to call up 4 bees.
+Waiting for bees to load their machine guns...
+.
+.
+.
+.
+Bee i-96d85440 is ready for the attack.
+.
+Bee i-97d85441 is ready for the attack.
+.
+Bee i-94d85442 is ready for the attack.
+.
+Bee i-99d8544f is ready for the attack.
+The swarm has assembled 4 bees.
+(killerbees)
+```
+
+4) Rat-at-at-at-at-at!
+
+```
+$ bees attack -n 10000 -c 250 -u https://protected-reaches-5163.herokuapp.com/tiny-kittens-in-your-memory/killerbees
+
+Read 4 bees from the roster.
+Connecting to the hive.
+Assembling bees.
+Each of 4 bees will fire 2500 rounds, 62 at a time.
+Stinging URL so it will be cached for the attack.
+Organizing the swarm.
+Bee 0 is joining the swarm.
+Bee 1 is joining the swarm.
+Bee 2 is joining the swarm.
+Bee 3 is joining the swarm.
+Bee 1 is firing his machine gun. Bang bang!
+Bee 0 is firing his machine gun. Bang bang!
+Bee 3 is firing his machine gun. Bang bang!
+Bee 2 is firing his machine gun. Bang bang!
+Bee 1 is out of ammo.
+Bee 3 is out of ammo.
+Bee 0 is out of ammo.
+Bee 2 is out of ammo.
+Offensive complete.
+     Complete requests:   10000
+     Requests per second: 300.760000 [#/sec] (mean)
+     Time per request:    824.635750 [ms] (mean)
+     50% response time:   800.000000 [ms] (mean)
+     90% response time:   1062.000000 [ms] (mean)
+Mission Assessment: Target successfully fended off the swarm.
+The swarm is awaiting new orders.
+(killerbees)
+```
+
+First of all, this is fun and makes me happy.  Second of all, 300 r/s seems low.  That's not my app's limit.  Is it being throttled somewhere in between?
+
+Lets play with the settings.  We want high concurrency, but we don't need lots of requests.  This didn't take long.  Let's scale up to 20 bees (my quota max), and 10x load.
+
+> Pro-tip.  Reload the console page and you'll see "4 Running Instances".  Those bee's are on the clock son!  Let's send them back to the hive.
+
+You can see how many instances you're running by refreshing the AWS dashboard.
+
+```
+$ bees down
+                                      
+Read 4 bees from the roster.
+Connecting to the hive.
+Calling off the swarm.
+Stood down 4 bees.
+(killerbees)
+```
+
+### Spike test v2.
+
+```
+$ bees up -s 20 -g public -k adorable -z us-east-1e 
+ ... bzzzzz
+
+$ bees attack -n 100000 -c 2500 -u https://protected-reaches-5163.herokuapp.com/tiny-kittens-in-your-memory/killerbees
+ ... BZZZZZZZZZZZZZZZ!
+
+Offensive complete.
+     Complete requests:   100000
+     Requests per second: 1493.800000 [#/sec] (mean)
+     Time per request:    1673.879200 [ms] (mean)
+     50% response time:   1769.550000 [ms] (mean)
+     90% response time:   2167.450000 [ms] (mean)
+Mission Assessment: Target severely compromised.
+The swarm is awaiting new orders.
+(killerbees)
+
+$ bees down
+```
+
+Hmmm... These are interesting numbers.  We did more 1500 r/s, but the response time was terrible.  What's up with that?  Well, we are using the **free** version.
+
+### Spike test v3
+
+Let's bump up to 2 dynos on heroku and try again (do this in the kittens directory, not the bees directory).
+
+```
+$ heroku ps:scale web=2
+Scaling dynos... done, now running web at 2:1X.
+```
+
+And back to the bees directory:
+
+```
+# Make sure we're using our python virtual environment
+$ source bin/activate
+# Attack
+$ bees up -s 20 -g public -k adorable -z us-east-1e 
+$ bees attack -n 100000 -c 2500 -u https://protected-reaches-5163.herokuapp.com/tiny-kittens-in-your-memory/killerbees
+Offensive complete.
+     Complete requests:   100000
+     Requests per second: 1505.710000 [#/sec] (mean)
+     Time per request:    1660.395800 [ms] (mean)
+     50% response time:   1623.100000 [ms] (mean)
+     90% response time:   2095.450000 [ms] (mean)
+Mission Assessment: Target severely compromised.
+The swarm is awaiting new orders.
+$ bees down
+```
+
+Done!  Here's a 'Metrics' report from Heroku.  Heroku and BWMG don't necessarily agree, but that's left as an excercise for the reader FIXME cat video.
+
+![articles/screenshots/Loader.io*]
+
+(Hold on a sec while I check my AWS for leftover bees, and turn my heroku app back to 1 dyno).
+
+Overall, I'm super happy with `beeswithmachineguns`, for FIXME (get bill amount https://console.aws.amazon.com/billing/home#/) I got some valuable information.
+
+While bees may be right for me, all these tools have something to offer.
+
+Also, nice work Heroku, 'Metrics' converted me from freemium :-)
+
+# Hurray!  It's over!
 
 So, that was quite a journey!  We looked at:
 
@@ -476,6 +698,24 @@ So, that was quite a journey!  We looked at:
  - 2 kinds of testing: localhost (for dev) and cloud (for devops)
  - localhost testing tools tools: `ab`, JMeter, Mocha
  - Cloud testing offerings: Blazemeter, Blitz, and Loader.io
- - Some adorable kittens
+ - Some [bees](http://kottke.org/10/10/tiny-catapult-for-throwing-pies-at-bees)
+ - And some [adorable kittens](https://www.youtube.com/watch?v=0Bmhjf0rKe8)
 
-There's alot more we could cover, but there's enough here for an iteration of performance testing, and that's what staying Agile is all about.
+There's alot more we could cover, but there's more than enough here for an iteration of performance testing, and that's what staying Agile is all about.
+
+-----
+
+BTW, here's some cat videos, because I was burned out on this and enjoyed watching them:
+
+https://www.youtube.com/watch?t=19&v=7VSR4_tAYvw
+https://www.youtube.com/watch?v=0vmoZEaN_-o - impossible task
+https://www.youtube.com/watch?v=plWnm7UpsXk - Dramatic surprise
+https://www.youtube.com/watch?t=24&v=z3U0udLH974
+https://www.youtube.com/watch?t=25&v=0iXHim3ToQ4
+https://www.youtube.com/watch?t=42&v=fzzjgBAaWZw
+https://www.youtube.com/watch?v=J---aiyznGQ
+https://www.youtube.com/watch?t=14&v=7M-jsjLB20Y
+
+http://mashable.com/2012/07/11/cat-videos-most-views/#gallery/cat-vidz/520c23c0519840676a00039b
+
+I dare you to put cat videos in your tech blog sir.  I Dare You!

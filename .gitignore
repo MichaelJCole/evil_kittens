@@ -24,3 +24,4 @@ sessions/
 *.log
 *.tmp
 apache-jmeter-2.13
+.boto
