@@ -37,32 +37,26 @@ Asking these specific questions is part of asking the general question *How and 
 
 ## Anatomy
 
-Any successful performance test will have these parts:
+Performance tests have a **Test Plan**:
 
   - **Server Under Test**: Software, hardware, and configuration. 
 
-  - **Test Plan**
+  - **Test Case(s)**: Requests and assertions, describing the server's use.  *login, put 4 things in cart, checkout, logout, done.*
 
-    - **Test Case(s)**: Series of requests and assertions, describing how the server would be used by one user.  These are more-or-less End-to-end Unit tests.  *login, put 4 things in cart, checkout, logout, done.*
+  - **Load**: Description of how and when to run the test cases.  *1000 Users (aka Threads), running Test Case A, then B.  Looped 1000 times.*
 
-    - **Load**: Description of how and when to run the test cases.  *1000 Users (aka Threads), running Test Case A, then B.  Looped 1000 times.*
+  - **Testing Tool**: Run the load and make a report.
 
-  - **Testing Tool**:
+  - **Test Report**:  Actionable data, easy to share, easy to compare, and preferrably without constant fiddling.
 
-    - Computers and software to run Test Cases, creating the Load, and summarizing the results.
-
-  - **Test Report**:
-
-    - Actionable data, easy to share, easy to compare, and preferrably without constant fiddling.
-
-Test plan....  Snorrr....kgt!  Drool. Yeah, that'll happen.
+Test cases....  Snorrr....kgt!  Drool. Yeah, that'll happen.
 
 
 ## Most importantly, why!
 
-Performance testing can be a huge --waste-- sink of time.  We're looking at strategies to iterate quickly, without building elaborate written test plans.  P.s. don't google 'Performance test plan'.
+Performance testing can be a huge --waste-- sink of time.  We're looking for strategies to iterate quickly, without building elaborate written test plans.  P.s. don't google 'Performance test plan'.
 
-Performance testing should be done with a clear question or vision:   
+We need a clear question or vision:   
 
   - *How can I make this use case faster?*
 
@@ -84,7 +78,7 @@ We're using [Node.js](https://nodejs.org/) hosted on [Heroku](https://devcenter.
 
 Our API has these routes:
 
-    GET /tiny-kittens-in-your-memory/123         -> text/plain: filename 
+    GET /tiny-kittens-in-your-memory/:id        -> text/plain: filename 
     GET /big-kittens-in-your-memory/:id          -> image/jpeg: [kitten jpg data]
     GET /evil-kittens-sploding-your-memory/:id   -> locks 1 meg of memory for 1 seconds
     GET /evil-kittens-sploding-your-cpu/:id      -> 100% cpu for 1 seconds
@@ -99,7 +93,7 @@ Here's FIXME-github-link an Express 4.0 app implementing this API.  This server 
 
 ## Server hardware and configuration
 
-This article describes two servers under test, with strategies and things to be gained from each.
+We're looking at strategies for **locahost** and **cloud** performance testing.
 
 ### Starting a Localhost Server To Test
 
@@ -107,21 +101,15 @@ If you'd like to play along and are using Node for the first time, [nvm (node ve
 
 ```
 curl https://raw.githubusercontent.com/creationix/nvm/v0.25.1/install.sh | bash
-```
-
-There's also a manual install.
-
-Now, install a new Node.js environment:
-
-```
+# Install node
 nvm install stable
 # Start a new shell
 bash 
-# You might want to put this in your shell startup
+# Run this every time you start a new shell
 nvm use stable
 ```
 
-Great, here's the code on Github:
+Great, here's the API code on Github:
 
 ```
 git clone FIXME
@@ -130,7 +118,7 @@ npm install
 node simple.js
 ```
 
-Open <a href="http://localhost:8000">http://localhost:8000</a> to test.
+Open <a href="http://localhost:8000">http://localhost:8000</a> to test.  Excellent!
 
 ### Starting a Cloud Server To Test
 
@@ -243,7 +231,7 @@ Percentage of the requests served within a certain time (ms)
  100%     51 (longest request)
 ```
 
-That's alot of copy/paste, but you can see some basic and useful information.  response time average, response time distribution, etc. 
+That's alot of copy/paste, but you can see some basic and useful information: response time average, response time distribution, etc. 
 
 Your OS has a resource utilization viewer (notice the the node.js process switching between cores):
 
@@ -262,7 +250,7 @@ The actual times don't predict production performance.  But comparing the two te
 | A (with logging) | 3.433 sec | 2913.15  | 3.433  |
 | B (w/o logging)  | 2.279 sec | 4387.75  | 2.279  |
 
-So, logging requests to stdout is a 50% performance drag on our in-memory file server.  Noted!  
+So, logging requests to stdout is a 50% performance drag on our in-memory kitten server.  Noted!  
 
 Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests, but it takes multiple requests to make a 'use case'.  For that, we'll need something stronger.
 
@@ -272,7 +260,7 @@ So we've got two nasty resource leaks in our API:
  - Every new :id leaks 1 meg of memory
  - `evil-kittens-sploding-your-disk/id` also writes 1 meg to the disk.
 
-Eventually our server will 'randomly' crash and we'd rather that happened during testing.  That test is an Endurance test.
+Eventually our server will run out of disk/memory and 'randomly' crash.  We'd rather that happened during testing.  That test is an Endurance test.
 
 ### Reusing what we already have
 
@@ -292,7 +280,7 @@ $ npm test
 
 Ok, so our API is pretty stateless (except for the memory leak), but let's pretend these tests needed to be run in order.
 
-Bash scripting is too much scaffolding.  But we could write a test and time it in our test runner.  The hack in `mocha` is to use `require-new`.  
+We could loop our E2E tests in the shell but that's not going to generate much load.  You can write special tests that run the loops, or try to loop existing tests.  This was hard in `mocha` - I had to use a `require-new` hack.  
 
 `time mocha -R min etc/throughput.perf.js`, but still can do ~333 requests/second and is only running in one thread.
 
@@ -307,7 +295,7 @@ For something with more teeth, let's take a look at JMeter.
 
 JMeter does:
  - End-to-end testing
- - Runs those tests in 'threads' to simulate multiple users
+ - Load testing by running those end-to-end tests as multiple users
 
 The first version of JMeter is from 1998.  17 years is a respectable run for any software (that's ~350 in software-years), and remembering that was vital to my happiness using it.
 
@@ -387,7 +375,7 @@ On my laptop, I leaked 1 meg/request on 10,000 requests with 0 failures.  It too
 
 Our free Heroku instance is 8-32-1000x more fragile that my laptop.  
 
-The best way to do this is with a Virtual Machine, for example [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html)
+A better way to test on localhost is with a Virtual Machine, for example [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html)
 
 > Heroku:  Note that `heroku local` doesn't set memory limits.  You might try [Vagrant-Heroku](https://github.com/ejholmes/vagrant-heroku#building-from-scratch).
 
@@ -399,11 +387,9 @@ The best way to do this is with a Virtual Machine, for example [Vagrant](https:/
 
 3) Use what you already have.  If you can, re-use existing end-to-end tests for Load and Endurance testing.
 
-3) We've already written E2E tests, but converting them to a Test Load is non-trivial.
+4) JMeter is a powerful tool for writing E2E load tests.  
 
-4) JMeter is a powerful tool for writing E2E load tests.  **In my experience, JMeter is a useful tool, but takes a large investment of time.** 
-
-5) Considering the learning curve for creating, maintaining, and sharing tests, `ab` is probably more productive.
+5) **In my experience, JMeter is a useful tool, but takes a large investment of time.** `ab` was more agile for me.
 
 6) For an enterprise building a test lab, JMeter would be an essential tool.  But we're Agile, so let's rent one from the cloud.
 
@@ -483,7 +469,7 @@ Unfortunately, their pricing is $799+/month, so we didn't test that.
 
 ## Loader.io
 
-Loader.io almost got a pass because they didn't auto-verify the Heroku domain of our app.  While annoying, it just took a minute to add the route, and I was glad I did.
+Loader.io almost got passed up because it didn't auto-verify the Heroku domain of our app.  While annoying, it just took a minute to add the route, and was worth the look.
 
 Loader.io is the most reasonable priced at $99/mo, with some generous offerings re: number of clients.  We were able to do 10k/min, or 166 requests/second without any ramp-up time.  While far from a kitten spike test, their $99/mo offer is for 1666 r/s.
 
@@ -493,7 +479,7 @@ Loader.io is the most reasonable priced at $99/mo, with some generous offerings 
 
 Overall, Blitz and Loader.io felt the most Agile in terms of firing up a server and running some tests, while Blazemeter is a great offering for distributing load from JMeter and Selenium/Webdriver tests.
 
-So, our tour of online testing services was nice.  The fancy reports are worthy of management-by-colors (less red! more green!).  But they don't seem to integrate into a larger tool-chain, and as an engineer I don't feel satisfied we've pushed the kittens to their adorable limits!
+So, our tour of online testing services was nice.  The fancy reports are worthy of management-by-colors (red-bad-green-good!).  But they don't seem to quickly integrate into a larger tool-chain, and as an engineer I don't feel satisfied we've pushed the kittens to their adorable limits!
 
 So it's time to bring out the big guns.  Mounted on a swarm of angry bees.  Courtesy of the Chicago Tribune.  [Bees with Machine Guns](https://github.com/newsapps/beeswithmachineguns) is an `ab` for the cloud.  
 
@@ -505,7 +491,7 @@ Great!  Rub hands together.  Let's begin.
 
 1) Install
 
-Python (like Node.js) runs as root by default on Ubuntu.  This is the ops equivalant of [clicking random popups](https://www.youtube.com/watch?v=_KHVKxXLpoA) in a browser.  It's better not to run random internet code as root, so let's use [virtualenv](http://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
+Python (like Node.js) runs as root by default on Ubuntu.  This is the ops equivalant of [clicking random popups](https://www.youtube.com/watch?v=_KHVKxXLpoA) in a browser.  It's better not to run strange internet code as root, so let's use [virtualenv](http://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
 
 ```
 sudo pip install virtualenv
@@ -517,6 +503,8 @@ pip install beeswithmachineguns
 ```
 
 2) AWS Credentials.  [Sign up](http://aws.amazon.com/).  
+
+We're renting our 'test lab' from AWS, so we need a little setup.
 
 a) Sign into the Console.
 Top left.  Your name -> Security Credentials -> Access Keys -> Generate.
@@ -536,13 +524,13 @@ b) Switch to N. Virginia
 
 beeswithmachineguns uses an AMI stored in that region.  You can run it from anywhere, but you'll have to move/make the AMI.
 
-b) Make a security group.
+c) Make a security group.
 
  - Console -> Services dropdown -> EC2 -> Key pairs -> Create Key Pair
  - Name: 'adorable'
  - A .pem will download.  Put this in .ssh
 
-c) public security group
+d) public security group
 
 We need to talk to our bees after making them, so open port 22 for ssh
 
@@ -606,17 +594,7 @@ Offensive complete.
 Mission Assessment: Target successfully fended off the swarm.
 The swarm is awaiting new orders.
 (killerbees)
-```
 
-First of all, this is fun and makes me happy.  Second of all, 300 r/s seems low.  That's not my app's limit.  Is it being throttled somewhere in between?
-
-Lets play with the settings.  We want high concurrency, but we don't need lots of requests.  This didn't take long.  Let's scale up to 20 bees (my quota max), and 10x load.
-
-> Pro-tip.  Reload the console page and you'll see "4 Running Instances".  Those bee's are on the clock son!  Let's send them back to the hive.
-
-You can see how many instances you're running by refreshing the AWS dashboard.
-
-```
 $ bees down
                                       
 Read 4 bees from the roster.
@@ -625,6 +603,12 @@ Calling off the swarm.
 Stood down 4 bees.
 (killerbees)
 ```
+
+First of all, this is fun and makes me happy.  Second of all, 300 r/s seems low.  That's not my app's limit.  Is it being throttled somewhere in between?
+
+Lets play with the settings.  We want high concurrency, but we don't need lots of requests.  This didn't take long.  Let's scale up to 20 bees (my quota max), and 10x load.
+
+> Pro-tip.  Those bee's are on the clock son!  Send them away with `bees down` Reload the console page and you'll see "4 Running Instances".  
 
 ### Spike test v2.
 
@@ -648,11 +632,11 @@ The swarm is awaiting new orders.
 $ bees down
 ```
 
-Hmmm... These are interesting numbers.  We did more 1500 r/s, but the response time was terrible.  What's up with that?  Well, we are using the **free** version.
+Hmmm... These are interesting numbers.  We did about 1500 r/s, but the response time was terrible.  What's up with that?  Well, we are using Heroku's **free** version.
 
 ### Spike test v3
 
-Let's bump up to 2 dynos on heroku and try again (do this in the kittens directory, not the bees directory).
+Let's bump up to 2 dynos on Heroku and try again (do this in the kittens directory, not the bees directory).
 
 ```
 $ heroku ps:scale web=2
@@ -684,11 +668,9 @@ Done!  Here's a 'Metrics' report from Heroku.  Heroku and BWMG don't necessarily
 
 (Hold on a sec while I check my AWS for leftover bees, and turn my heroku app back to 1 dyno).
 
-Overall, I'm super happy with `beeswithmachineguns`, for FIXME (get bill amount https://console.aws.amazon.com/billing/home#/) I got some valuable information.
+Overall, I'm super happy with the bees.  For a mere FIXME (get bill amount https://console.aws.amazon.com/billing/home#/) I got some valuable information.
 
-While bees may be right for me, all these tools have something to offer.
-
-Also, nice work Heroku, 'Metrics' converted me from freemium :-)
+While bees may be right for me, all these tools have something to offer someone.  I really depends on understanding the simplest strategy to meet your needs.
 
 # Hurray!  It's over!
 
@@ -701,7 +683,7 @@ So, that was quite a journey!  We looked at:
  - Some [bees](http://kottke.org/10/10/tiny-catapult-for-throwing-pies-at-bees)
  - And some [adorable kittens](https://www.youtube.com/watch?v=0Bmhjf0rKe8)
 
-There's alot more we could cover, but there's more than enough here for an iteration of performance testing, and that's what staying Agile is all about.
+There's alot more we could cover, but there's more than enough here for an iteration of performance testing your app, and that's what staying Agile is all about.
 
 -----
 
