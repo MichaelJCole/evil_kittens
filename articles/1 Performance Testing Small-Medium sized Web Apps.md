@@ -662,9 +662,13 @@ The swarm is awaiting new orders.
 $ bees down
 ```
 
-Done!  Here's a 'Metrics' report from Heroku.  Heroku and BWMG don't necessarily agree, but that's left as an excercise for the reader FIXME cat video.
+Done!  Here's a 'Metrics' report from Heroku.  Heroku and BWMG don't necessarily agree on 'time per request', but that's left as an excercise for the reader FIXME cat video.
 
 ![articles/screenshots/Loader.io*]
+
+We got 1500 r/s with both configurations (1 and 2 dynos).  So that seems like there is something in between our clients and app server.  That's also an excercise for the reader. 
+
+(FIXME, we could ask Heroku why this is happening, so they look good.  Maybe they'd repost/link to us)
 
 (Hold on a sec while I check my AWS for leftover bees, and turn my heroku app back to 1 dyno).
 
