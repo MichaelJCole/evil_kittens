@@ -253,7 +253,11 @@ The actual times don't predict production performance.  But comparing the two te
 
 So, logging requests to stdout is a 50% performance drag on our in-memory kitten server.  Noted!  
 
-Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests, but it takes multiple requests to make a 'use case'.  For that, we'll need something stronger.
+Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests.  
+
+If we wanted to test more than one URL, [seige](http://manpages.ubuntu.com/manpages/hardy/man1/siege.1.html) is a good alternative.  
+
+But, it takes logic to make a 'use case'.  For that, we'll need something stronger.
 
 ## An Endurance Test
 
