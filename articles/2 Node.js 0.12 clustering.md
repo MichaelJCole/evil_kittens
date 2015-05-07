@@ -1,4 +1,4 @@
-# Load Testing Web Apps 2015
+# High Performance Node.js Clustering
 
 The secret to take a business to "web scale" is to hire quality engineers.
 
@@ -8,9 +8,48 @@ Node.js is in the toolbox, and 0.12 just got an update to it's Clustering API.
 
 Node.js 0.12 is the pre-quel to Node.js 1.0.  The 0.12 Clustering API underwent some improvements, learning from 0.8.  There's a bunch of other goodies in 0.12 so if you're not using it already, check it out.
 
+
+## Hello Kittens
+
+In [FIXME TITLE Agile Performance Testing](FIXME) we played with some fun (if slightly evil) kittens.  
+
+That article was loooo-snore-ooong.  So if you're just interested in Node.js Clustering, here we're going to code up some clustering into the [API](FIXME).  If you want to follow along [it's easy to setup](FIXME).  
+
+Here's where we're at: 
+
+```
+node singleNoLog.js
+```
+
+Should get you a home page at <a href="http://localhost:8000">http://localhost:8000</a>.  
+
+We're going to work with one API route to explore Node.js clustering.  
+
+    GET /evil-kittens-sploding-your-cpu/:id      -> 100% cpu for 1 seconds
+
+The evil-kitten API is an [Express 4.0 app](FIXME GITHUB).
+
+This particular API call:
+  - Calculates a Fibbonacci number.
+  - Leaks 1 meg of memory for each :id - [slightly evil](FIXME kitten video)
+
+## A Baseline Load test
+
+Open a new console, and let's do a quick [load test](FIXME link to test types).  We'll use `ab` as our [test tool](FIXME link to AB).
+
+```
+time ab -l -n 10000 -c 10 http://localhost:8000/evil-kittens-sploding-your-cpu/baseline
+```
+
+
+
+
+
 ## Just one thread
 
-Horizontal scaling is the idea that lots of little things can work better than one big thing.  For example, ants finding all possible sugar sources in my kitchen.
+Horizontal scaling is the idea that lots of little things can work better than one big thing.  For example, humanity's collective unconscious question, who's answer is [Nyan](https://www.youtube.com/watch?v=QH2-TGUlwu4).
+
+Horizontal scaling.  Node.js apps get just one thread.  
 
 Why?  Because making processes and threads is relatively cheap on my laptop, but relatively expensive "at scale".
 
@@ -20,7 +59,7 @@ Tools like and Node.js and Redis are built as single-threaded services.  Yes, Re
 
 But, the point isn't that *they* get one thread.  It's that *you* get one thread.  And if you're code can serve multiple requests in one thread, that means it's easier to horizontally scale for performance.
 
-## Making the Toy Server
+
 
 Enough Preamble.  Let's build something, crush it with load testing, then scale it.
 

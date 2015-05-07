@@ -115,7 +115,7 @@ Great, here's the API code on Github:
 git clone FIXME
 cd FIXME
 npm install
-node simple.js
+node single.js
 ```
 
 Open <a href="http://localhost:8000">http://localhost:8000</a> to test.  Excellent!
@@ -123,26 +123,27 @@ Open <a href="http://localhost:8000">http://localhost:8000</a> to test.  Excelle
 ### Starting a Cloud Server To Test
 
 If you don't want to install Node.js, you can still play along with a cloud server on Heroku, provided you have [heroku toolbelt](https://toolbelt.heroku.com/) and `git` installed.
-
-    # Get the code.
-    git clone FIXME
-    cd FIXME
-    # Create a Heroku account and log in
-    heroku login
-    # Create Heroku app and add git remote 'heroku'
-    heroku create
-    # Add load testing services
-    heroku addons:add blazemeter:test
-    heroku addons:add loaderio:basic
-    heroku addons:add blitz:250
-    # Add a remote logging service
-    heroku addons:add papertrail:choklad
-    # Deploy
-    git push heroku master
-    # Open app in browser
-    heroku open
-    # Open log in browser
-    heroku addons:open papertrail
+```
+# Get the code.
+git clone FIXME
+cd FIXME
+# Create a Heroku account and log in
+heroku login
+# Create Heroku app and add git remote 'heroku'
+heroku create
+# Add load testing services
+heroku addons:add blazemeter:test
+heroku addons:add loaderio:basic
+heroku addons:add blitz:250
+# Add a remote logging service
+heroku addons:add papertrail:choklad
+# Deploy
+git push heroku master
+# Open app in browser
+heroku open
+# Open log in browser
+heroku addons:open papertrail
+```
 
 This should open the app and a remote log in your browser.  It was created to be fun, innocent, and really destructive.  FIXME cat videos?  See below.
 
@@ -168,14 +169,14 @@ Simply put, performance testing on localhost is a dev task.
 sudo apt-get install apache2-utils
 ```
 
-So let's test a change.  There are two versions of the server: `simple.js` with logging, and `simple2.js` without logging.
+So let's test a change.  There are two versions of the server: `single.js` with logging, and `singleNoLog.js` without logging.
 
-Start up the server in one console: `node simple.js`
+Start up the server in one console: `node single.js`
 
 Run the tests in another console.  -n means 10000 requests. -c means 10 threads concurrently.  -l means don't count variable length response as an error.
 
 ```
-$ ab -l -n 10000 -c 10 http://localhost:8000/big-kittens-in-your-memory/simple
+$ ab -l -n 10000 -c 10 http://localhost:8000/big-kittens-in-your-memory/single
 This is ApacheBench, Version 2.3 <$Revision: 1528965 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
@@ -198,7 +199,7 @@ Server Software:
 Server Hostname:        localhost
 Server Port:            8000
 
-Document Path:          /big-kittens-in-your-memory/simple
+Document Path:          /big-kittens-in-your-memory/single
 Document Length:        Variable
 
 Concurrency Level:      10
@@ -241,7 +242,7 @@ Notice that Node.js is single threaded and serving 3k requests/second.  Nice!
 
 Let's turn off logging and see what happens:
 
-`ctrl-c` to kill the server, then `node simple2.js`.  Back to the test console and run it again.
+`ctrl-c` to kill the server, then `node singleNoLog.js`.  Back to the test console and run it again.
 
 The actual times don't predict production performance.  But comparing the two tells us about our implementations.
 

@@ -2,11 +2,10 @@
   "name": "evil-kittens",
   "version": "1.0.0",
   "description": "",
-  "main": "simple.js",
+  "main": "single.js",
   "scripts": {
-    "start": "node simple.js",
-    "test": "./node_modules/mocha/bin/mocha app.e2e.js",
-    "endurance": "./node_modules/mocha/bin/mocha endurance.e2e.js"
+    "start": "node single.js",
+    "test": "./node_modules/mocha/bin/mocha app.e2e.js"
   },
   "author": "Michael Cole",
   "license": "ISC",
