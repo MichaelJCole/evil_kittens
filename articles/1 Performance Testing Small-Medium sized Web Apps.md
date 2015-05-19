@@ -677,7 +677,7 @@ We got 1500 r/s with both configurations (1 and 2 dynos).  So that seems like th
 
 (Hold on a sec while I check my AWS for leftover bees, and turn my heroku app back to 1 dyno).
 
-Overall, I'm super happy with the bees.  For a mere FIXME (get bill amount https://console.aws.amazon.com/billing/home#/) I got some valuable information.
+Overall, I'm super happy with the bees.  For a mere $1.03 in computing from AWS I got some valuable information.
 
 While bees may be right for me, all these tools have something to offer someone.  I really depends on understanding the simplest strategy to meet your needs.
 
