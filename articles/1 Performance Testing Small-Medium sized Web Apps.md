@@ -1,6 +1,6 @@
 # Agile Performance Testing for Web Apps
 
-'We deployed our web app once, finished the beta, everybody signed up, and we never had a problem.'  - No one ever
+'We skipped the beta, deployed our web app once, everybody signed up, and never had a problem.'  - No one ever
 
 Unit testing gives us confidence to improve software features and add new ones.
 
@@ -22,7 +22,7 @@ But first, a little vocabulary and structure.
 
 ## Sub-species
 
-There are some exotic animals out there, but the most common are:
+There are some exotic species out there, but the most common Performance tests are:
 
   - **Load testing** measures how long to process a specific load. *How long does it take to process 10,000 requests?*
 
@@ -32,20 +32,20 @@ There are some exotic animals out there, but the most common are:
 
   - **Spike testing** applies sudden increased load and measures results.  *Slashdot effect testing*
 
-Asking these specific questions is part of asking the general question *How and when should I scale my web application?*  Luckily these different tests all have the same structure.
+Asking these specific questions is part of asking the general question *How and when should I scale my web application?*  Luckily these different tests all have the same anatomy and structure.
 
 
 ## Anatomy
 
 Performance tests have a **Test Plan**:
 
-  - **Server Under Test**: Software, hardware, and configuration. 
+  - **Server Under Test**: Software, hardware, and configuration.
 
   - **Test Case(s)**: Requests and assertions, describing the server's use.  *login, put 4 things in cart, checkout, logout, done.*
 
   - **Load**: Description of how and when to run the test cases.  *1000 Users (aka Threads), running Test Case A, then B.  Looped 1000 times.*
 
-  - **Testing Tool**: Run the load and make a report.
+  - **Testing Tool**: Run the test load and make a report.
 
   - **Test Report**:  Actionable data, easy to share, easy to compare, and preferrably without constant fiddling.
 
@@ -56,19 +56,19 @@ Test cases....  Snorrr....kgt!  Drool. Yeah, that'll happen.
 
 Performance testing can be a huge --waste-- sink of time.  We're looking for strategies to iterate quickly, without building elaborate written test plans.  P.s. don't google 'Performance test plan'.
 
-We need a clear question or vision:   
+Agile performance testing needs a single iteration-sized question or vision:   
 
-  - *How can I make this use case faster?*
+  - *How can I make this use case faster?  In 2 weeks.*
 
-  - *I want each server to serve 1000 requests/second, without crashing or serving errors.*
+  - *I want each server to serve 1000 requests/second, without crashing or serving errors.  In 2 weeks.*
 
-  - *We have a marketing event.  The web applicaton needs to serve 70,000 requests/second.*
+  - *We have a marketing event.  The web applicaton needs to serve 70,000 requests/second.  In 2 weeks.*
 
 Once you have that, you'll have clear goals to iterate towards, and cut through lots of unnecessary effort.
 
 # Server Under Test
 
-Enough Preamble.  We need an API to test.  Because we'll be here awhile, let's look at some kittens.  
+Enough Preamble.  We need an API to test.  Because we'll be here awhile, let's look at some kittens.
 
 ## Application API
 
@@ -78,18 +78,18 @@ We're using [Node.js](https://nodejs.org/) hosted on [Heroku](https://devcenter.
 
 Our API has these routes:
 
-    GET /tiny-kittens-in-your-memory/:id        -> text/plain: filename 
-    GET /big-kittens-in-your-memory/:id          -> image/jpeg: [kitten jpg data]
-    GET /evil-kittens-sploding-your-memory/:id   -> locks 1 meg of memory for 1 seconds
-    GET /evil-kittens-sploding-your-cpu/:id      -> 100% cpu for 1 seconds
-    GET /evil-kittens-sploding-your-disk/:id     -> writes 1 meg to disk
-    GET /evil-kittens-sploding-your-network/:id  -> text/plain: sends 512k of random data
+    GET /tiny-kittens-in-your-memory/:id   -> text/plain: filename 
+    GET /big-kittens-in-your-memory/:id    -> image/jpeg: [kitten jpg data]
+    GET /evil-kittens-in-your-memory/:id   -> lock 1 mb of memory for 1 sec
+    GET /evil-kittens-in-your-cpu/:id      -> Calculate fib(30) badly
+    GET /evil-kittens-in-your-disk/:id     -> writes 1 mb to disk
+    GET /evil-kittens-in-your-network/:id  -> sends 512k of random data
 
-:id is any string, used to cycle through the images, and memory leak 1mb/id.
+:id is any string, used to cycle through the images.  Each different :id leaks 1 mb of memory.
 
 Here's FIXME-github-link an Express 4.0 app implementing this API.  This server is neither secure or performant.  If you read the last few calls, you'll see it's small, cute, and shamelessly destructive.
 
-> READER BEWARE:  As cute as the pictures are, this server could be considered a denial-of-service attack, or wasteful use of resources by a hosting provider.  ESPECIALLY a shared hosting provider like Heroku.  It could cause others, and you, great suffering in downtime, account lock-outs, and/or legal aggression.  aka.  Don't come cryin to me.
+> READER BEWARE:  As cute as the pictures are, this server could be considered a denial-of-service attack, or wasteful use of resources by a hosting provider.  ESPECIALLY a shared hosting provider like Heroku.  Inappropriate use could cause others, and you, great suffering in downtime, account lock-outs, and/or legal aggression.  aka.  Don't come cryin to me.
 
 ## Server hardware and configuration
 
@@ -105,16 +105,19 @@ curl https://raw.githubusercontent.com/creationix/nvm/v0.25.1/install.sh | bash
 nvm install stable
 # Start a new shell
 bash 
-# Run this every time you start a new shell
+# Run this every time you start a new shell, or put in a startup file
 nvm use stable
 ```
 
 Great, here's the API code on Github:
 
 ```
+# Get the code
 git clone FIXME
 cd FIXME
+# Install dependencies
 npm install
+# Start server
 node single.js
 ```
 
@@ -145,7 +148,7 @@ heroku open
 heroku addons:open papertrail
 ```
 
-This should open the app and a remote log in your browser.  It was created to be fun, innocent, and really destructive.  FIXME cat videos?  See below.
+This should open the app and a remote log in your browser.  It was created to be fun, innocent, and really destructive.
 
 # Performance Testing on Localhost
 
@@ -153,7 +156,7 @@ What can we test on localhost?
 
 **We can't do Stress Testing or Spike Testing**.  These are both 'destructive' tests trying to overwhelm the server.  Measuring the 'destruction' means measuring against the 'production configuration'.
 
-Are those server code errors?  Or the configuration of your environment?  Was it the testing tool (JMeter) or Python (Gatling.io, locust.io)?  Your network driver?
+> Why not do Stress Testing on localhost?  Well, what's failing?  Your testing tool?  Network driver?  Server?  It doesn't matter because it's different in production anyways.
 
 Simply put, Stress and Spike testing require a set of clients that can overwhelm the server.  We can't do that all on the same machine.
 
@@ -173,7 +176,7 @@ So let's test a change.  There are two versions of the server: `single.js` with 
 
 Start up the server in one console: `node single.js`
 
-Run the tests in another console.  -n means 10000 requests. -c means 10 threads concurrently.  -l means don't count variable length response as an error.
+Run the tests in another console.  `-n 10000` requests. `-c 10` is the number of threads.  `-l` means don't count variable length response as an error.
 
 ```
 $ ab -l -n 10000 -c 10 http://localhost:8000/big-kittens-in-your-memory/single
@@ -251,9 +254,9 @@ The actual times don't predict production performance.  But comparing the two te
 | A (with logging) | 3.433 sec | 2913.15  | 3.433  |
 | B (w/o logging)  | 2.279 sec | 4387.75  | 2.279  |
 
-So, logging requests to stdout is a 50% performance drag on our in-memory kitten server.  Noted!  
+So, logging requests to stdout is a ~50% performance drag on our in-memory kitten server.  Noted!
 
-Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests.  
+Hurray!  Our first 'Load Test'.  `ab` has plenty of options for making single requests.
 
 If we wanted to test more than one URL, [seige](http://manpages.ubuntu.com/manpages/hardy/man1/siege.1.html) is a good alternative.  
 
@@ -263,9 +266,9 @@ But, it takes logic to make a 'use case'.  For that, we'll need something strong
 
 So we've got two nasty resource leaks in our API:
  - Every new :id leaks 1 meg of memory
- - `evil-kittens-sploding-your-disk/id` also writes 1 meg to the disk.
+ - `evil-kittens-in-your-disk/id` also writes 1 meg to the disk.
 
-Eventually our server will run out of disk/memory and 'randomly' crash.  We'd rather that happened during testing.  That test is an Endurance test.
+Eventually our server will run out of disk/memory and "randomly" crash.  We'd rather that happened during testing.  That test is an Endurance test.
 
 ### Reusing what we already have
 
@@ -285,16 +288,15 @@ $ npm test
 
 Ok, so our API is pretty stateless (except for the memory leak), but let's pretend these tests needed to be run in order.
 
-We could loop our E2E tests in the shell but that's not going to generate much load.  You can write special tests that run the loops, or try to loop existing tests.  This was hard in `mocha` - I had to use a `require-new` hack.  
+We could loop our E2E tests in the shell but that's not going to generate much load.  You can write special tests that run the loops, or try to loop existing tests.  This was hard in `mocha` - I had to use a `require-new` [hack](FIXME/etc/throughput.perf.js)
 
-`time mocha -R min etc/throughput.perf.js`, but still can do ~333 requests/second and is only running in one thread.
+Running `time mocha -R min etc/throughput.perf.js`, still can only do ~333 requests/second and is only running in one thread.  To be fair, Mocha wasn't designed for this.
 
-You might find these tools helpful for your platform.
+For a larger load, we're going to need a better testing tool.  Let's take a look at JMeter.
 
+> You might find these tools helpful for your platform.
 > Scala: Check out [getling.io](http://gatling.io/) 
 > Python:  Check out [locust.io](http://locust.io/) 
-
-For something with more teeth, let's take a look at JMeter.
 
 ### Using JMeter
 
@@ -304,9 +306,9 @@ JMeter does:
 
 The first version of JMeter is from 1998.  17 years is a respectable run for any software (that's ~350 in software-years), and remembering that was vital to my happiness using it.
 
-It offer's a 'recorder' http proxy that will "write your tests for you".  Tests can be recorded from browser interactions or the command line.
+It offer's a "recorder" http proxy that will "write your tests for you".  Tests can be recorded from browser interactions or the command line.
 
-![Starting JMeter](./screenshots/1-start-jmeter.png "Start JMeter")
+![Starting JMeter](./screenshots/2-start-jmeter.png "Starting JMeter")
 
 First, install [JMeter](http://jmeter.apache.org/index.html), and the [standard and extras](http://jmeter-plugins.org/wiki/Start/) plugins:
 
@@ -318,7 +320,7 @@ wget -qO- -O tmp.zip http://jmeter-plugins.org/downloads/file/JMeterPlugins-Extr
 cd ..
 ```
 
-(Yes or No to replacing LICENSE and README.  Windows users might find this[guide](http://www.guru99.com/guide-to-install-jmeter.html) useful)
+("Yes" to replacing LICENSE and README.  Windows users might find this[guide](http://www.guru99.com/guide-to-install-jmeter.html) useful)
 
 Start JMeter:
 
@@ -329,13 +331,13 @@ Start JMeter:
 To record a test plan, 
 
   - "File -> Templates -> Select Template: 'Recording' -> Create".  
-  - Open 'Workbench', 
-  - Select 'HTTP(S) Test Script Recorder'
-  - Scroll down and click 'Start' at the bottom, click 'Ok'.
+  - Open "Workbench", 
+  - Select "HTTP(S) Test Script Recorder"
+  - Scroll down and click 'Start' at the bottom, click "Ok".
 
-Port 8888 is now a proxy server. Note that this isn't a 'transparent proxy', so HTTPS requests require special shenanigans (that was the 'ok' dialog).  Clients must do some extra work crafting requests for them to be proxied (and therefor recorded by JMeter).
+Port 8888 is now a proxy server. Note that this isn't a [transparent proxy](http://www.webupd8.org/2010/02/differences-between-3-types-of-proxy.html), so HTTPS requests require special shenanigans (that was the "ok" dialog).  Clients must do some extra work crafting requests for them to be proxied (and therefore recorded by JMeter).
 
-You can 'record' requests by [configuring your browser](http://www.wikihow.com/Change-Proxy-Settings), or from the command line via an environment variable: 
+You can "record" requests by [configuring your browser](http://www.wikihow.com/Change-Proxy-Settings), or from the command line via an environment variable: 
 
 ```
 http_proxy="http://localhost:8888/" wget http://localhost:8000/
@@ -350,14 +352,14 @@ http_proxy="http://localhost:8888/" npm test
 > Node.js:  Unfortunately Supertest isn't the answer.  It doesn't [respect process.env.http_proxy](https://github.com/visionmedia/supertest/issues/214).  I re-wrote the kitten tests using a patched version of 'Hippie', which uses the newest 'request', which uses process.env.http_proxy.
 > If this seems like alot of work and caveats, it is.  It would be better to record these requests on the server instead of through a proxy.
 
-Great, now we're recorded or written a pile of HTTP requests in our JMeter test.  JMeter lets us replay those requests rapidly by creating 'threads' (aka users/agents).  These threads run simultaneously, and can loop over the requests.
+Great, now we've recorded or written a pile of HTTP requests in our JMeter test.  JMeter lets us replay those requests rapidly by creating "threads" (aka users/agents).  These threads run simultaneously, and can loop over the requests.
 
-JMeter was designed as it's own E2E testing tool, so can do assertions and other complexities.  Need cookies?  'Right-click -> Add -> Config Element'
+JMeter was designed as it's own E2E testing tool, so can do assertions and other complexities.  Need cookies?  "Right-click -> Add -> Config Element"
 
 ### Localhost JMeter Endurance Test 
 
   - Open `endurance.jmx` to see our endurance test plan.  
-    - 'User Defined Variables' sets server, port, 100 threads, and 100 loops.
+    - "User Defined Variables" sets server, port, 100 threads, and 100 loops.
     - Requests have randomized id's to expose the leaks.
     - All requests should respond 200.
   - Click the green triangle to run the tests.
@@ -367,22 +369,22 @@ JMeter was designed as it's own E2E testing tool, so can do assertions and other
 ![Throughput](./articles/screenshots/4-jmeter-hits-per-second.png "Throughput")
 ![Memory Leak](./articles/screenshots/3-endurance-test-memory-leak.png "Memory Leak")
 
-For raw throughput on our simple in-memory request, JMeter was on par with `ab`.  See `etc/throughput.jmx`.
+For raw throughput on our simple in-memory request, JMeter's throughput was on par with `ab`.  See `etc/throughput.jmx`.
 
 ### Server Hardware and Configuration
 
-On my laptop, I leaked 1 meg/request on 10,000 requests with 0 failures.  It took my laptop right up to it's 16 gig limit.  
+On my laptop, I leaked 1 meg/request on 10,000 requests with 0 failures.  It took my laptop right up to it's 16 gig memory limit.  
 
 | System              | CPU's    | Memory | Disk        |
 | ------------------- | -------- | ------ | ----------- |
 | My System76 laptop  |  8 cores | 16 gig | 256 gig SSD |
 | Heroku Free Node    |  1 core  | .5 gig | .2 gig      | 
 
-Our free Heroku instance is 8-32-1000x more fragile that my laptop.  
+Our free Heroku instance is 8-32-1000 times more fragile that my laptop.  This is why it's important to test on production hardware and configuration. 
 
 A better way to test on localhost is with a Virtual Machine, for example [Vagrant](https://docs.vagrantup.com/v2/why-vagrant/index.html)
 
-> Heroku:  Note that `heroku local` doesn't set memory limits.  You might try [Vagrant-Heroku](https://github.com/ejholmes/vagrant-heroku#building-from-scratch).
+> Heroku:  Note that `heroku local` doesn't set memory/disk limits.  You might try [Vagrant-Heroku](https://github.com/ejholmes/vagrant-heroku#building-from-scratch).
 
 ## Localhost Testing Takeaways
 
@@ -398,8 +400,7 @@ A better way to test on localhost is with a Virtual Machine, for example [Vagran
 
 6) For an enterprise building a test lab, JMeter would be an essential tool.  But we're Agile, so let's rent one from the cloud.
 
-Why not build a test lab? you ask.  Pull up a chair, and let me tell you a story...
-
+> Why not build a test lab? you ask.  Pull up a chair, and let me tell you a story...
 > Back in the caveman days of the 1990's, we had to program computers with rocks, fire, and C++.  There was no wifi (literally not invented), and 'web hosting' meant a strip-mall data center with a locked 'cage' containing an ethernet cable and clean power.  You bought your own server, which arrived in a [cow-colored box](https://www.google.com/search?biw=1299&bih=730&tbm=isch&q=gateway+computer+box&revid=2106055813&sa=X&ei=tIVJVarHE4qouwTd_oGgCg&ved=0CCsQ1QIoBA&bav=on.2,or.r_cp.&bvm=bv.92291466,d.c2E&dpr=1), then drove it to the 'cage' to install yourself.  It was a fun day-trip, except when dinosaurs attacked.  
 > Ops (devops not invented yet) bought two sets of hardware, one they locked in the 'cage' (so the programmers couldn't touch it), and one for the 'test lab'.  The test lab was on the local network so you could do distributed load testing from your co-workers desktops.  A desktop is...
 
@@ -413,7 +414,7 @@ JMeter/etc are still useful for enterprises with 'test labs', but I'm going to g
 
 Because our little Heroku server is in a production-like configuration, we can now do Stress and Spike Testing.
 
-Let's take another look at our server
+Let's take another look at our server:
 
 ```
 git push heroku master
@@ -428,7 +429,7 @@ I've written many servers that wouldn't have needed this much load to get meanin
 
 ## From Localhost
 
-As a curiosity, we can test our Heroku instance from localhost.  If you've been following along with our `tiny/big-kittens-in-memory` examples, we could try them on Heroku to see throughput.  From Asia, I'm able to get 4.5 r/s on big-kittens, and 24.6 r/s on tiny kittens.  That's a *huge* difference from localhost servers (4,000 r/s).
+As a curiosity, we can test our Heroku cloud instance from localhost.  If you've been following along with our `tiny/big-kittens-in-memory` examples, we could try them on Heroku to see throughput.  From Asia, I'm able to get 4.5 r/s on big-kittens, and 24.6 r/s on tiny kittens.  That's a *huge* difference from localhost servers (4,000 r/s).
 
 We can also run our Endurance test from localhost.  Update `endurance.jmx`'s 'User Defined Variables':
 
@@ -444,7 +445,7 @@ May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Error R15 (Memory quota va
 May 04 02:18:35 protected-reaches-5163 heroku/web.1:  Stopping process with SIGKILL 
 ```
 
-So finally our Endurance test found the memory leak.  Heroku killed our runaway process at 2.6 gig.  You'll see test errors as well in Jmeter.  (A smarter test would check process memory at shutdown).  
+So finally our Endurance test found the memory leak.  Heroku killed our runaway process at 2.6 gb of memory (we're alloted 512 mb).  You'll see test errors as well in Jmeter.  (A smarter test would check process memory at shutdown).
 
 Also, do note that Error R15 probably shows up on someone's dashboard at Heroku.
 
@@ -454,64 +455,72 @@ Let's open our [Heroku dashboard](https://dashboard.heroku.com/apps) and try som
 
 ## Blazemeter
 
-Blazemeter, as you could tell from the name, is excited to run your JMeter tests in the cloud.  They'll also run your Selenium WebDriver scripts.
+Blazemeter, as you could tell from the name, is excited to run JMeter tests in the cloud.  They'll also run Selenium/WebDriver scripts.
 
-We can upload `endurance.jmx` to Blazemeter, but each change is ~5 mins to upload and retry.  That's not very exciting if you're not already heavily invested in JMeter.
+We can upload `endurance.jmx` to Blazemeter, but each change is ~5 mins to upload and retry.  That's not very exciting unless we're already heavily invested in JMeter.
 
-Let's take a look at their more light-weight offering.  Blazemeter offers a "Http Urls List Test" similar to our `ab` test.  Some screenshots below show the test and some results pages.  The freemium offering was making ~9 requests/second on our `tiny-kittens-in-your-memory` url.  Clearly, Blazemeter isn't overwhelming our server.  Meh.
+Let's take a look at their more light-weight offering.  Blazemeter offers a "Http Urls List Test" similar to our `ab` test.  Screenshots below.  The freemium offering was making ~9 requests/second on our `tiny-kittens-in-your-memory` url.  Clearly, Blazemeter isn't overwhelming our server.  Meh.
 
-![articles/screenshots/Blazemeter*.png]
+![Test Configuration](./articles/screenshots/Blazemeter-0.png "Test Configuration")
+![Simple Test](./articles/screenshots/Blazemeter-1.png "Simple Test")
+![Report](./articles/screenshots/Blazemeter-2.png "Report")
 
-Blazemeter is only offering a free 'beta' version through Heroku.  Their website offers monthly plans at $249+/mo. 
+Blazemeter offers a free 'beta' version through Heroku.  Their website offers monthly plans starting at $249+/mo.
 
 ## Blitz
 
 Blitz is more suited to running Stress and Spike testing.  Their freemium option offers a 60 second 'rush' that looks suitable for doing Stress and Spike testing.  The service seems to ramp up users slowly, so it never got into the thousands, but 242 requests/seconds is pretty informative.  The UI is easy to understand, and in about 2 minutes you'll have a result.  This is starting to feel Agile.
 
-![articles/screenshots/Blitz*]
+![Blitz Test](./articles/screenshots/Blitz-1.png "Blitz Test")
+![Blitz Report](./articles/screenshots/Blitz-2.png "Blitz Report")
 
-Unfortunately, their pricing is $799+/month, so we didn't test that.
+Unfortunately, their intro pricing is $799+/month, so we didn't test that.
 
 ## Loader.io
 
-Loader.io almost got passed up because it didn't auto-verify the Heroku domain of our app.  While annoying, it just took a minute to add the route, and was worth the look.
+I almost gave Loader.io a pass, because they don't auto-verify the Heroku domain of our app.  While annoying, it just took a minute to [add the route](FIXME GITHUB TO app.js), and was worth the look.
 
 Loader.io is the most reasonable priced at $99/mo, with some generous offerings re: number of clients.  We were able to do 10k/min, or 166 requests/second without any ramp-up time.  While far from a kitten spike test, their $99/mo offer is for 1666 r/s.
 
-![articles/screenshots/Loader.io*]
+![Loader.io Test](./articles/screenshots/Loader.io-1.png "Loader.io Test")
+![Loader.io Report](./articles/screenshots/Loader.io-2.png "Loader.io Report")
 
 ## Time to bring out the big guns.
 
 Overall, Blitz and Loader.io felt the most Agile in terms of firing up a server and running some tests, while Blazemeter is a great offering for distributing load from JMeter and Selenium/Webdriver tests.
 
-So, our tour of online testing services was nice.  The fancy reports are worthy of management-by-colors (red-bad-green-good!).  But they don't seem to quickly integrate into a larger tool-chain, and as an engineer I don't feel satisfied we've pushed the kittens to their adorable limits!
+So, our tour of online testing services was nice.  The fancy reports are worthy of management-by-colors (red-BAD-green-GOOD!).  But they don't seem to quickly integrate into a larger tool-chain, and as an engineer I don't feel satisfied we've pushed the kittens to their adorable limits!
 
 So it's time to bring out the big guns.  Mounted on a swarm of angry bees.  Courtesy of the Chicago Tribune.  [Bees with Machine Guns](https://github.com/newsapps/beeswithmachineguns) is an `ab` for the cloud.  
 
-'A utility for arming (creating) many bees (micro EC2 instances) to attack (load test) targets (web applications).  http://apps.chicagotribune.com/'
+> 'A utility for arming (creating) many bees (micro EC2 instances) to attack (load test) targets (web applications).  http://apps.chicagotribune.com/'
 
 > READER BEWARE:  Using BeesWithMachineGuns against someone elses site (or your site on a shared host) could be viewed ethically and legally as a denial-of-service attack.  It could cause others, and you, great suffering in downtime, AWS account lock-outs, or legal aggression.  aka.  Don't come cryin to me son.
 
 Great!  Rub hands together.  Let's begin.
 
-1) Install
+### 1) Install
 
-Python (like Node.js) runs as root by default on Ubuntu.  This is the ops equivalant of [clicking random popups](https://www.youtube.com/watch?v=_KHVKxXLpoA) in a browser.  It's better not to run strange internet code as root, so let's use [virtualenv](http://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
+Python (like Node.js) runs as root by default on Ubuntu.  This is the Ops equivalant of [clicking random popups](https://www.youtube.com/watch?v=_KHVKxXLpoA) in a browser.  It's better not to run strange internet code as root, so let's use [virtualenv](http://www.dabapps.com/blog/introduction-to-pip-and-virtualenv-python/).
 
 ```
 sudo pip install virtualenv
 virtualenv killerbees
-cd killerbees
+
 # This is our project directory
+cd killerbees
+# You have to run this in every shell, or it won't work
 source bin/activate
 pip install beeswithmachineguns
 ```
 
-2) AWS Credentials.  [Sign up](http://aws.amazon.com/).  
+### 2) AWS Credentials.  
 
-We're renting our 'test lab' from AWS, so we need a little setup.
+[AWS Sign up](http://aws.amazon.com/).  
 
-a) Sign into the Console.
+We're renting our "test lab" from AWS, so we need a little setup.
+
+#### a) Sign into the Console.
 Top left.  Your name -> Security Credentials -> Access Keys -> Generate.
 
 Put them into in a file called `.boto` in your home directory `~/`.  
@@ -523,19 +532,19 @@ aws_secret_access_key = <your secret key>
 
 Secure that file:  `chmod 600 ~/.boto`
 
-[Absolutely, do not ever, check this file or .pem's into git.  Slap!](https://securosis.com/blog/my-500-cloud-security-screwup)  Note: this needs your attention or you will suffer.
+> [Absolutely, do not ever, check this file or .pem's into git.  Slap!](https://securosis.com/blog/my-500-cloud-security-screwup)  **Note: this needs your attention or you will suffer.**
 
-b) Switch to N. Virginia
+#### b) Switch to N. Virginia
 
-beeswithmachineguns uses an AMI stored in that region.  You can run it from anywhere, but you'll have to move/make the AMI.
+"beeswithmachineguns" uses an AMI stored in that region.  You can run it from anywhere, but you'll have to move/make the AMI.
 
-c) Make a security group.
+#### c) Make a security group.
 
  - Console -> Services dropdown -> EC2 -> Key pairs -> Create Key Pair
  - Name: 'adorable'
- - A .pem will download.  Put this in .ssh
+ - A .pem will download.  Put this in `~/.ssh`
 
-d) public security group
+#### d) public security group
 
 We need to talk to our bees after making them, so open port 22 for ssh
 
@@ -543,7 +552,9 @@ We need to talk to our bees after making them, so open port 22 for ssh
  - name and description -> 'public'
  - Inbound -> Add Rule -> Type: 'ssh' -> Source: 'anywhere' -> Create
 
-3) Guns up!
+Right.  That's a whirlwind tour of AWS.
+
+### 3) Guns up!
 
 If the instructions were good, you should be getting some bees...
 
@@ -567,10 +578,10 @@ The swarm has assembled 4 bees.
 (killerbees)
 ```
 
-4) Rat-at-at-at-at-at!
+### 4) Attack!
 
 ```
-$ bees attack -n 10000 -c 250 -u https://protected-reaches-5163.herokuapp.com/tiny-kittens-in-your-memory/killerbees
+$ bees attack -n 10000 -c 250 -u https://evil-kittens-1337.herokuapp.com/tiny-kittens-in-your-memory/killerbees
 
 Read 4 bees from the roster.
 Connecting to the hive.
@@ -609,11 +620,13 @@ Stood down 4 bees.
 (killerbees)
 ```
 
-First of all, this is fun and makes me happy.  Second of all, 300 r/s seems low.  That's not my app's limit.  Is it being throttled somewhere in between?
+First of all, this is fun and makes me happy.  I'm having a good time.
 
-Lets play with the settings.  We want high concurrency, but we don't need lots of requests.  This didn't take long.  Let's scale up to 20 bees (my quota max), and 10x load.
+Second of all, 300 r/s seems low.  That's not my app's limit.  Is it being throttled somewhere in between?
 
-> Pro-tip.  Those bee's are on the clock son!  Send them away with `bees down` Reload the console page and you'll see "4 Running Instances".  
+Lets play with the settings.  We want high concurrency, but we don't need lots of requests.  This didn't take long.  Let's scale up to 20 bees (my AWS quota max), and 10x load.
+
+> Pro-tip.  Those bee's are on the clock!  Reload the console page and you'll see "4 Running Instances".  You can send them away when you're not using them with `bees down`
 
 ### Spike test v2.
 
@@ -641,14 +654,14 @@ Hmmm... These are interesting numbers.  We did about 1500 r/s, but the response 
 
 ### Spike test v3
 
-Let's bump up to 2 dynos on Heroku and try again (do this in the kittens directory, not the bees directory).
+Let's bump up to 2 dynos on Heroku and try again (do this in the `evil-kittens` directory, not the `killerbees` directory).
 
 ```
 $ heroku ps:scale web=2
 Scaling dynos... done, now running web at 2:1X.
 ```
 
-And back to the bees directory:
+And back to the `killerbees` directory:
 
 ```
 # Make sure we're using our python virtual environment
@@ -667,9 +680,10 @@ The swarm is awaiting new orders.
 $ bees down
 ```
 
-Done!  Here's a 'Metrics' report from Heroku.  Heroku and BWMG don't necessarily agree on 'time per request', but that's left as an excercise for the reader FIXME cat video.
+Done!  Here's a "Metrics" report from Heroku.  Heroku and BWMG don't necessarily agree on "time per request", but that's left as an excercise for the reader.
 
-![articles/screenshots/Loader.io*]
+![Heroku 2 Dynos](./articles/screenshots/heroku.2.png "Heroku 2 Dynos")
+![Heroku Metrics](./articles/screenshots/heroku.3.png "Heroku Metrics")
 
 We got 1500 r/s with both configurations (1 and 2 dynos).  So that seems like there is something in between our clients and app server.  That's also an excercise for the reader. 
 
@@ -693,20 +707,3 @@ So, that was quite a journey!  We looked at:
  - And some [adorable kittens](https://www.youtube.com/watch?v=0Bmhjf0rKe8)
 
 There's alot more we could cover, but there's more than enough here for an iteration of performance testing your app, and that's what staying Agile is all about.
-
------
-
-BTW, here's some cat videos, because I was burned out on this and enjoyed watching them:
-
-https://www.youtube.com/watch?t=19&v=7VSR4_tAYvw
-https://www.youtube.com/watch?v=0vmoZEaN_-o - impossible task
-https://www.youtube.com/watch?v=plWnm7UpsXk - Dramatic surprise
-https://www.youtube.com/watch?t=24&v=z3U0udLH974
-https://www.youtube.com/watch?t=25&v=0iXHim3ToQ4
-https://www.youtube.com/watch?t=42&v=fzzjgBAaWZw
-https://www.youtube.com/watch?v=J---aiyznGQ
-https://www.youtube.com/watch?t=14&v=7M-jsjLB20Y
-
-http://mashable.com/2012/07/11/cat-videos-most-views/#gallery/cat-vidz/520c23c0519840676a00039b
-
-I dare you to put cat videos in your tech blog sir.  I Dare You!
