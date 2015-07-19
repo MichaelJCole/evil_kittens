@@ -107,14 +107,7 @@ Time per request: 305.747 [ms]  (mean)
 Time per request: 30.575 [ms] (mean, across all concurrent requests)
 ```
 
-What's the second line then?  It's damn confusing, is what it is.  
-
-```
-Time per request: 305.747 [ms] (mean)
-Time per request: 30.575 [ms] (mean, across all concurrent requests)`?
-```
-
-This `mean, across all concurrent requests` is:
+What's the second line then?  `mean, across all concurrent requests` is:
 
 `Time taken for tests: 30.575 seconds` / `Concurrency Level: 10`
 
@@ -124,11 +117,13 @@ If that's confusing, it's because it is.  There's a better way to measure this:
 
 Using our 30.5ms "Baseline", we can calculate our server's "concurrency performance".
 
-    performance[concurrency] = baseline / mean, across all concurrent requests
-    performance[10] = 30.5 / 30.575
-    performance[10] = 1
+    performance[test concurrency] = baseline / mean, across all concurrent requests
+    performance[10] = 30.5 ms / 305.747 ms
+    performance[10] = .1
 
-If "concurrency performance" is < 1, our server *bogs down* with more users.
+
+
+If "concurrency performance" is < 1, our server is slowing down with more concurrency.
 If "concurrency performance" is > 1, our server scales with concurrency.
 
 Since I have 7 idle CPU's on my laptop while the 8th is 100% clearly there's an opportunity for improvement.
@@ -247,9 +242,9 @@ So, `mean, across all concurrent requests` = 3.361 ms.  That's crazy-talk.  No r
 
 But, if we calculate our concurrency performance:
 
-    performance[load] = baseline / mean, across all concurrent requests
-    performance[10] = 30.5 / 3.361
-    performance[10] = 9.07
+    performance[load] = baseline / time per request
+    performance[10] = 30.5 / 33.614
+    performance[10] = .907
 
 We're serving a load-concurrency of 10, with a performance-concurrency of 9.  That's ~90% efficient.  Considering 
 
