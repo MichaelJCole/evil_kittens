@@ -1,0 +1,9 @@
+// show code
+atom .
+
+// start single threaded server and run test
+node single.js
+ab -l -n 1000 -c 10 http://localhost:8000/evil-kittens-in-your-cpu/baseline
+
+node cluster.js
+ab -l -n 1000 -c 10 http://localhost:8000/evil-kittens-in-your-cpu/baseline
