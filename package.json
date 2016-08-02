@@ -17,7 +17,6 @@
     "gulp-load-plugins": "^0.10.0",
     "gulp-plumber": "^1.0.0",
     "gulp-task-listing": "^1.0.0",
-    "hippie": "MichaelJCole/hippie",
     "jade": "^1.9.2",
     "jshint-stylish": "^1.0.1",
     "mocha": "^2.2.4",
