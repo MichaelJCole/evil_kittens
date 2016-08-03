@@ -101,8 +101,8 @@ module.exports = function(config) {
   });
 
   // Used to validate our app at loader.io
-  app.get('/loaderio-443a6dc49f1041e0c37caa493184eb91.txt', function(req, res, next) {
-    return res.send('loaderio-443a6dc49f1041e0c37caa493184eb91');
+  app.get('/loaderio-1826f62d0ee7e86b34fe392089e16a2d.txt', function(req, res, next) {
+    return res.send('loaderio-1826f62d0ee7e86b34fe392089e16a2d');
   });
 
   // Home page with list of routes.
