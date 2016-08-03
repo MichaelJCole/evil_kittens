@@ -1,6 +1,6 @@
 'use strict';
 
-/** 
+/**
  * This is our application.  Use it like this:
  *
  *   var app = require('./app')({ logging: false });
@@ -19,8 +19,8 @@ module.exports = function(config) {
 
   // Turning logging off to increase throughput ~50%
   if (config.logging) {
-    app.use(require('morgan')('dev')); // log requests to console.  
-  }  
+    app.use(require('morgan')('dev')); // log requests to console.
+  }
 
   // Get some data to serve - notice readdirSync() and readFileSync() in Node.js 0.12.
   var kittenNames = [];
@@ -66,14 +66,15 @@ module.exports = function(config) {
   });
 
   // Evil route to lock 1 mb of memory for 1 seconds
+  var buffers = [];
   app.get('/evil-kittens-in-your-memory/:id', function(req, res, next) {
-    crypto.randomBytes(1024*1024, function(err, buf) {
-      if (err) throw err;
-      setTimeout(function() {
-        var keepit = buf;  // jshint ignore:line
-        res.send(req.kittens.id + ' Locking 1 mb of memory for 1 seconds');
-      }, 1000);
-    });
+    var b = new Buffer(1024*1024);
+    b.fill('meow!');
+    buffers.push(b);
+    setTimeout(function() {
+      buffers.pop();
+    }, 10000);
+    res.send(req.kittens.id + ' Locking 1 mb of memory for 10 seconds');
   });
 
   // Evil route to calculate fib(30).  Badly.
